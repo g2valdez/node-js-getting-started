@@ -27,6 +27,18 @@
 .scrollbox {
   background: #E0E0E0;
   color: black;
-  height: 500px;
+  width: 400px;
+  height: 400px;
   overflow: scroll;
 }
+.big_button {
+  background: #E0E0E0;
+  color: black;
+  padding-top: 50px;
+  padding-bottom: 100px;
+}
+.right {
+  position: absolute;
+  right: 0px;
+}
+
