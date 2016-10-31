@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var users = require('./public/data.json').users;
 
 var app = express();
 
@@ -12,10 +13,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 // views is directory for all template files
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-
-var users = [{user:"japple", pass: "seed", name: "Johnny Appleseed", img: "http://popularpittsburgh.com/wp-content/uploads/2015/02/johnny-appleseed-article.jpg"},
-	{user:"jhan", pass: "cock", name: "John Hancock", img: "https://www.wikitree.com/photo.php/7/7a/JohnHancockSmall.jpeg"}
-];
 
 app.get('/', function(request, response) {
   response.render('pages/index');
@@ -89,6 +86,8 @@ app.get('/edit_profile', function(request, response) {
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
+  console.log(users);
+
 });
 
 
