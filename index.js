@@ -1,13 +1,19 @@
 var express = require('express');
+var bodyParser = require('body-parser');
+
 var app = express();
 
 app.set('port', (process.env.PORT || 5000));
 
 app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 // views is directory for all template files
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+
+var users = [];
 
 app.get('/', function(request, response) {
   response.render('pages/index');
@@ -15,6 +21,19 @@ app.get('/', function(request, response) {
 
 app.get('/login', function(request, response) {
   response.render('pages/login');
+});
+
+app.post('/login', function(req, res){
+	var user = req.body.url.substring(32);
+	var pass = req.body.room;
+	var newUser = {
+		user: user,
+		pass: pass
+	};
+	res.render('room_viewer_host.html', {
+		pageHeader: req.body.room,
+		roomID: vidID
+	});
 });
 
 app.get('/signup', function(request, response) {
