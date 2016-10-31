@@ -1,39 +1,61 @@
-# node-js-getting-started
+steps to use:
 
-A barebones Node.js app using [Express 4](http://expressjs.com/).
+open git bash and do the following:
 
-This application supports the [Getting Started with Node on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs) article - check it out.
+change into the directory you want your files to be in. (using cd command)
 
-## Running Locally
 
-Make sure you have [Node.js](http://nodejs.org/) and the [Heroku Toolbelt](https://toolbelt.heroku.com/) installed.
+paste the following:
 
-```sh
-$ git clone git@github.com:heroku/node-js-getting-started.git # or clone your own fork
-$ cd node-js-getting-started
-$ npm install
-$ npm start
-```
+git clone https://github.com/g2valdez/spy-guys.git
 
-Your app should now be running on [localhost:5000](http://localhost:5000/).
+cd spy-guys
 
-## Deploying to Heroku
+heroku git remote -a spy-guys
 
-```
-$ heroku create
-$ git push heroku master
-$ heroku open
-```
-or
 
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+after making changes, check the status of git, make a local commit, and push to the github repo using the following 3 lines:
 
-## Documentation
+git status
 
-For more information about using Node.js on Heroku, see these Dev Center articles:
+git add --all
 
-- [Getting Started with Node.js on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs)
-- [Heroku Node.js Support](https://devcenter.heroku.com/articles/nodejs-support)
-- [Node.js on Heroku](https://devcenter.heroku.com/categories/nodejs)
-- [Best Practices for Node.js Development](https://devcenter.heroku.com/articles/node-best-practices)
-- [Using WebSockets on Heroku with Node.js](https://devcenter.heroku.com/articles/node-websockets)
+git commit -m "enter message about changes within these quotes"
+
+git push
+
+
+let us all know when you've made a commit, so that we can pull new changes to our repo. When another user has pushed, we need to update our code using the following commands:
+
+
+(if you have unstaged changes): 
+
+git add --all
+
+git commit -m "message about your recent changes"
+
+
+(whether or not you have unstaged changes, you must run this):
+
+git fetch --all
+
+git pull
+
+
+if you want to see the changes you've made, run the following command:
+
+heroku local
+
+and navigate to localhost:5000 in a web browser of your choice
+
+
+if you want to push changes you've made to the heroku page (the page you get when you go to spy-guys.herokuapp.com),
+ after pushing to the github repo, run the following command:
+
+git push heroku master
+
+
+
+
+
+

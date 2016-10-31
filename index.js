@@ -60,6 +60,14 @@ app.get('/mission', function(request, response) {
   response.render('pages/mission');
 });
 
+app.get('/leaderboards', function(request, response) {
+  response.render('pages/leaderboards');
+});
+
+app.get('/edit_profile', function(request, response) {
+  response.render('pages/edit_profile');
+});
+
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
