@@ -13,7 +13,9 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-var users = [];
+var users = [{user:"japple", pass: "seed", name: "Johnny Appleseed", img: "http://popularpittsburgh.com/wp-content/uploads/2015/02/johnny-appleseed-article.jpg"},
+	{user:"jhan", pass: "cock", name: "John Hancock", img: "https://www.wikitree.com/photo.php/7/7a/JohnHancockSmall.jpeg"}
+];
 
 app.get('/', function(request, response) {
   response.render('pages/index');
@@ -23,17 +25,34 @@ app.get('/login', function(request, response) {
   response.render('pages/login');
 });
 
-app.post('/login', function(req, res){
-	var user = req.body.url.substring(32);
-	var pass = req.body.room;
+app.post('/login', function(request, response){
+	var user = request.body.username;
+	var pass = request.body.password;
 	var newUser = {
 		user: user,
 		pass: pass
 	};
-	res.render('room_viewer_host.html', {
-		pageHeader: req.body.room,
-		roomID: vidID
-	});
+	for (var i in users) {
+		if (users[i].user === newUser.user){
+			if (users[i].pass === newUser.pass){
+				response.render('pages/home', {
+					user_name: users[i].name,
+					user_img: users[i].img
+				});
+				return;
+			}
+			else {
+				console.log("right user wrong pass");
+				response.render('pages/login');
+				return;
+			}
+		}
+
+	}
+
+	console.log("wrong user");
+	response.render('pages/login');
+
 });
 
 app.get('/signup', function(request, response) {
