@@ -117,7 +117,9 @@ app.get('/mission/:missionName', function(request, response) {
 				break;
 			}
 		}
-		missions[i].users.push(cookie.user);
+		missions[i].users.push(cookie.user); // push to missions array
+		console.log("cookie items: ");
+		console.log(cookie);
 		response.render('pages/mission', {mission:missions[i],
 			user: cookie});
 	}
@@ -139,37 +141,77 @@ io.on('connection', function(socket){
 		console.log('pushed user info');
 		var client = {
 			socket: socket,
-			username: pack.user,
+			user: pack.user,
 			mission: pack.mission
 		}
 		allClients.push(client);
 		io.emit('update users', pack.mission.users);
 	});
 
+	socket.on('change item', function(pack){
+		for(var i = 0; i < users.length; i++){
+			if(users[i].user === pack.user.user){
+				break;
+			}
+		}
+		for(var j = 0; j < missions.length; j++){
+			if(missions[j].name === pack.mission.name){
+				break;
+			}
+		}
+		if(pack.add){
+			console.log("add ", pack.item);
+			missions[j].items.push(pack.item);//add to mission items
+			for(var k = 0; k < users[i].items.length; k++){
+				if(pack.item === users[i].items[k]){
+					break;
+				}
+			}
+			users[i].items.splice(k, 1);//remove from user items
+
+		}
+		else{ //remove from mission items, add to user items
+			console.log("remove ", pack.item);
+			for(var k = 0; k < missions[j].items.length; k++){
+				if(pack.item === missions[j].items[k]){
+					break;
+				}
+			}
+			missions[j].items.splice(k, 1); // remove from mission item
+			users[i].items.push(pack.item); // add to user items
+		}
+		var pack = {
+			user: users[i],
+			mission: missions[j]
+		};
+		io.emit('update items', pack);
+	});
+
 	socket.on('disconnect', function(){
 		console.log('a user disconnected');
+		// finds the right client (object with socket, user, mission)
 		for(var i = 0; i < allClients.length; i++){
 			if(socket === allClients[i].socket){
 				break;
 			}
 		}
+		//finds the right mission in the missions array
 		for(var j = 0; j < missions.length; j++){
-			console.log(missions[j].name);
-			console.log(allClients[i].mission.name);
 			if(missions[j].name === allClients[i].mission.name){
 				break;
 			}
 		}
+		//finds the right user index
 		for(var k = 0; k < missions[j].users.length; k++){
-			console.log(allClients[i].username);
+			console.log(allClients[i].user.user);
 			console.log(missions[j].users[k]);
-			if(allClients[i].username === missions[j].users[k]){
+			if(allClients[i].user.user === missions[j].users[k]){
 				break;
 			}
 		}
-		missions[j].users.splice(k, 1);
-		console.log(missions[j].users);
+		missions[j].users.splice(k, 1); // remove the user from the missions user array
 		io.emit('update users', missions[j].users);
+		console.log(missions[j].users);
 	});
 
 });
