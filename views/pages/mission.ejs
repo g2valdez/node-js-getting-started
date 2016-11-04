@@ -3,6 +3,20 @@
 <head>
   <% include ../partials/header.ejs %>
 </head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+
+  socket.on('connect', function(){
+  	var pack = {
+  		'user': <%-JSON.stringify(user.user)%>,
+  		'mission': <%-JSON.stringify(mission.name)%>
+  	};
+  	
+  	socket.emit('user info', pack);
+  });
+
+</script>
 
 <body>
 
@@ -10,8 +24,16 @@
 
 <div class="jumbotron text-center">
   <div class="container">
-    <h1><%=missionName%></h1>
+    <h1><%=mission.name%></h1>
   </div>
+</div>
+<div class="container">
+	<h2> Active users on this Mission: </h2>
+  <% for(var i=0; i < mission.users.length; i++) {%>
+    <hr>
+    <h3><%=mission.users[i]%> </h3>
+  <% } %>
+  <hr>
 </div>
 
 </body>

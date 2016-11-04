@@ -71,10 +71,7 @@ app.get('/home', function(request, response) {
 	var cookie = request.cookies.user;
 	if(cookie === undefined){
 		console.log("error no cookie");
-		response.render('pages/home', {
-			user_name: users[0].name,
-			user_img: users[0].img
-		});
+		response.render('pages/login');
 	}
 	else {
 		response.render('pages/home', {
@@ -90,9 +87,17 @@ app.get('/stats', function(request, response) {
 });
 
 app.get('/mission_browser', function(request, response) {
-  response.render('pages/mission_browser', {
-  	missions: missions
-  });
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		response.render('pages/mission_browser', {
+  			missions: missions
+  		});
+	}
+
 });
 
 app.get('/history', function(request, response) {
@@ -100,9 +105,23 @@ app.get('/history', function(request, response) {
 });
 
 app.get('/mission/:missionName', function(request, response) {
-  response.render('pages/mission', {
-  	missionName: request.params.missionName
-  });
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		var mission;
+		for(var i = 0; i < missions.length; i++){
+			if(request.params.missionName === missions[i].name){
+				break;
+			}
+		}
+		missions[i].users.push(cookie.user);
+		response.render('pages/mission', {mission:missions[i],
+			user: cookie});
+	}
+
 });
 
 app.get('/leaderboards', function(request, response) {
@@ -113,20 +132,42 @@ app.get('/edit_profile', function(request, response) {
   response.render('pages/edit_profile');
 });
 
+var allClients = [];
 io.on('connection', function(socket){
 	console.log('a user connected');
-
-	socket.on('current time', function(msg){
-    	io.emit('set time', msg);
-		console.log('time: ' + msg);
+	socket.on('user info', function(pack){
+		console.log('pushed user info');
+		var client = {
+			socket: socket,
+			username: pack.user,
+			mission: pack.mission
+		}
+		allClients.push(client);
 	});
-	
-	socket.on('new connection', function(msg){
-    	io.emit('get time', msg);
-	});
 
-	socket.on('pause play video', function(msg){
-    	io.emit('control video', msg);
+	socket.on('disconnect', function(){
+		console.log('a user disconnected');
+		for(var i = 0; i < allClients.length; i++){
+			if(socket === allClients[i].socket){
+				break;
+			}
+		}
+		for(var j = 0; j < missions.length; j++){
+			console.log(missions[j].name);
+			console.log(allClients[i].mission);
+			if(missions[j].name === allClients[i].mission){
+				break;
+			}
+		}
+		for(var k = 0; k < missions[j].users.length; k++){
+			console.log(allClients[i].username);
+			console.log(missions[j].users[k]);
+			if(allClients[i].username === missions[j].users[k]){
+				break;
+			}
+		}
+		missions[j].users.splice(k, 1);
+		console.log(missions[j].users);
 	});
 
 });
