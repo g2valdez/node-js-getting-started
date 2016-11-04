@@ -143,6 +143,7 @@ io.on('connection', function(socket){
 			mission: pack.mission
 		}
 		allClients.push(client);
+		io.emit('update users', pack.mission.users);
 	});
 
 	socket.on('disconnect', function(){
@@ -154,8 +155,8 @@ io.on('connection', function(socket){
 		}
 		for(var j = 0; j < missions.length; j++){
 			console.log(missions[j].name);
-			console.log(allClients[i].mission);
-			if(missions[j].name === allClients[i].mission){
+			console.log(allClients[i].mission.name);
+			if(missions[j].name === allClients[i].mission.name){
 				break;
 			}
 		}
@@ -168,6 +169,7 @@ io.on('connection', function(socket){
 		}
 		missions[j].users.splice(k, 1);
 		console.log(missions[j].users);
+		io.emit('update users', missions[j].users);
 	});
 
 });

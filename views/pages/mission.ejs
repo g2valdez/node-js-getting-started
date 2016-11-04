@@ -10,10 +10,20 @@
   socket.on('connect', function(){
   	var pack = {
   		'user': <%-JSON.stringify(user.user)%>,
-  		'mission': <%-JSON.stringify(mission.name)%>
+  		'mission': <%-JSON.stringify(mission)%>
   	};
   	
   	socket.emit('user info', pack);
+  });
+
+  socket.on('update users', function(users){
+    console.log(users);
+    $("#activeUsers").html("<h2> Active users on this Mission: </h2>");
+    for(var i=0; i< users.length; i++){
+      $("#activeUsers").append("<hr><h3>"+users[i]+"</h3>");
+    }
+    $("#activeUsers").append("<hr>");
+
   });
 
 </script>
@@ -27,13 +37,8 @@
     <h1><%=mission.name%></h1>
   </div>
 </div>
-<div class="container">
-	<h2> Active users on this Mission: </h2>
-  <% for(var i=0; i < mission.users.length; i++) {%>
-    <hr>
-    <h3><%=mission.users[i]%> </h3>
-  <% } %>
-  <hr>
+<div id="activeUsers" class="container">
+	
 </div>
 
 </body>
