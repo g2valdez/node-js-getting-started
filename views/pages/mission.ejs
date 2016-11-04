@@ -17,8 +17,6 @@
   		'mission': mission
   	};
 
-
-
     $("#yourItems").html("<h2> Your Items: </h2>");
     for(var i=0; i< user.items.length; i++){
       $("#yourItems").append('<hr><button type="button" onclick="changeItem(\'' + user.items[i] + '\', true)">' + user.items[i] + '</button>');
@@ -31,19 +29,19 @@
     }
     $("#groupItems").append("<hr>");
 
-
-  	
   	socket.emit('user info', pack);
   });
 
-  socket.on('update users', function(users){
-    console.log(users);
-    mission.users = users; //sets local mission users variable
-    $("#activeUsers").html("<h2> Active users on this Mission: </h2>");
-    for(var i=0; i< users.length; i++){
-      $("#activeUsers").append("<hr><h3>"+users[i]+"</h3>");
+  socket.on('update users', function(missionU){
+    if(missionU.name === mission.name){
+      console.log(mission.users);
+      mission.users = missionU.users; //sets local mission users variable
+      $("#activeUsers").html("<h2> Active users on this Mission: </h2>");
+      for(var i=0; i< mission.users.length; i++){
+        $("#activeUsers").append("<hr><h3>"+mission.users[i]+"</h3>");
+      }
+      $("#activeUsers").append("<hr>");
     }
-    $("#activeUsers").append("<hr>");
   });
 
   socket.on('update items', function(pack){

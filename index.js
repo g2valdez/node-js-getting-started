@@ -118,10 +118,14 @@ app.get('/mission/:missionName', function(request, response) {
 			}
 		}
 		missions[i].users.push(cookie.user); // push to missions array
-		console.log("cookie items: ");
-		console.log(cookie);
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+
+		}
 		response.render('pages/mission', {mission:missions[i],
-			user: cookie});
+			user: users[j]});
 	}
 
 });
@@ -145,7 +149,13 @@ io.on('connection', function(socket){
 			mission: pack.mission
 		}
 		allClients.push(client);
-		io.emit('update users', pack.mission.users);
+		for(var i = 0; i < missions.length; i++){
+			if(missions[i].name === pack.mission.name) {
+				break;
+			}
+
+		}
+		io.emit('update users', missions[i]);
 	});
 
 	socket.on('change item', function(pack){
@@ -203,15 +213,13 @@ io.on('connection', function(socket){
 		}
 		//finds the right user index
 		for(var k = 0; k < missions[j].users.length; k++){
-			console.log(allClients[i].user.user);
-			console.log(missions[j].users[k]);
 			if(allClients[i].user.user === missions[j].users[k]){
 				break;
 			}
 		}
 		missions[j].users.splice(k, 1); // remove the user from the missions user array
-		io.emit('update users', missions[j].users);
 		console.log(missions[j].users);
+		io.emit('update users', missions[j]);
 	});
 
 });
