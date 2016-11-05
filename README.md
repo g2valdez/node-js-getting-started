@@ -11,7 +11,7 @@ git clone https://github.com/g2valdez/spy-guys.git
 
 cd spy-guys
 
-heroku git:remote -a project
+heroku git:remote -a spy-guys
 
 after making changes, check the status of git, make a local commit, and push to the github repo using the following 3 lines:
 
