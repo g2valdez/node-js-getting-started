@@ -6,16 +6,14 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
   var socket = io();
-  var user;
-  var mission;
+  var user = <%-JSON.stringify(user)%>;
+  var mission = <%-JSON.stringify(mission)%>;
 
   socket.on('connect', function(){
-    user = <%-JSON.stringify(user)%>;
-    mission = <%-JSON.stringify(mission)%>;
-  	var pack = {
-  		'user': user,
-  		'mission': mission
-  	};
+    var pack = {
+      'user': user,
+      'mission': mission
+    };
 
     $("#yourItems").html("<h2> Your Items: </h2>");
     for(var i=0; i< user.items.length; i++){
@@ -29,12 +27,11 @@
     }
     $("#groupItems").append("<hr>");
 
-  	socket.emit('user info', pack);
+    socket.emit('user info', pack);
   });
 
   socket.on('update users', function(missionU){
     if(missionU.name === mission.name){
-      console.log(mission.users);
       mission.users = missionU.users; //sets local mission users variable
       $("#activeUsers").html("<h2> Active users on this Mission: </h2>");
       for(var i=0; i< mission.users.length; i++){
@@ -64,8 +61,6 @@
   });
 
   function changeItem(item, add){
-    console.log(item);
-    console.log(add);
     var pack = {
       'user': user,
       'mission': mission,
@@ -75,9 +70,6 @@
     socket.emit('change item', pack);
   }
 
-</script>
-
-<script>
 $(document).ready(function(){
   //Canvas stuff
   var canvas = $("#canvas")[0];
@@ -100,32 +92,85 @@ $(document).ready(function(){
   
   function init()
   {
-    d = "right"; //default direction
     create_players();
     create_board(); //Now we can see the food particle
     //finally lets display the score
     score = 0;
-
     paint();
+
   }
   init();
   
   function create_players()
   {
-    var player1 = {
-      pos: [0,0]
-    };
-    var player2 = {
-      pos: [2,2]
-    };
-    players.push(player1);
-    players.push(player2);
+    for(var i = 0; i < mission.users.length; i++)
+    {
+      var player = new Object();
+      player.name = mission.users[i];
+      players.push(player)
+    }
   }
   
   //Lets create the board now
   function create_board()
   {
-    game_board.grid = [[0,1,0,0,1,0,0,1],[0,1,0,1,1,0,0,1],[0,0,0,1,1,0,1,1],[1,0,0,1,0,0,1,1],[1,0,0,1,0,0,1,0], [1,0,0,1,0,1,1,0]];
+    game_board.grid = mission.board;
+    game_board.board = new Array(game_board.grid.length);
+    console.log(game_board.board.length);
+    for(var i = 0; i < game_board.grid.length; i++)
+    {
+      game_board.board[i] = new Array(game_board.grid.length);
+    }
+    for(var i = 0; i < game_board.grid.length; i++)
+    {
+      var currentCol = game_board.grid[i];
+      for(var j = 0; j < currentCol.length; j++)
+      {
+        console.log("(i,j): (" + i + "," + j + ")");
+        var cell = new Object();
+        cell.type = currentCol[j];
+        switch(currentCol[j]) {
+          case ' ':
+            cell.color = "LightGrey";
+            break;
+          case 'O':
+            cell.color = "black";
+            cell.destructable = false;
+            break;
+          case 'o':
+            cell.color = "DarkGrey";
+            cell.destructable = true;
+            break;
+          case 'R':
+            cell.color = "red"
+            break;
+          case 'K':
+            cell.color = "yellow"
+            break;
+          case '1':
+            players[0].pos = [j,i];
+            break;
+          case '2':
+            //code
+            break;
+          case 'T':
+            cell.color = "orange"
+            //code
+            break;
+          case 'G':
+            cell.color = "green"
+            //code
+            break;
+          case '*':
+            cell.color = "purple"
+            //code
+            break;
+          default:
+            console.log("you suck");
+        }
+        game_board.board[j][i] = cell;
+      }
+    }
   }
   
   //Lets paint the snake now
@@ -133,47 +178,49 @@ $(document).ready(function(){
   {
     //To avoid the snake trail we need to paint the BG on every frame
     //Lets paint the canvas now
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = "black";
-    ctx.strokeRect(0, 0, w, h);
+    // ctx.fillStyle = "white";
+    // ctx.fillRect(0, 0, w, h);
 
     //These were the position of the head cell.
     //We will increment it to get the new head position
     //Lets add proper direction based movement now
-    if(d == "right") players[0].pos[0]++;
-    else if(d == "left") players[0].pos[0]--;
-    else if(d == "up") players[0].pos[1]--;
-    else if(d == "down") players[0].pos[1]++;
-
-    
-    for(var i = 0; i < game_board.grid.length; i++)
+    if(d == "right" && players[0].pos[0] + 1 < game_board.grid.length){
+      var val = game_board.grid[players[0].pos[1]][players[0].pos[0] + 1];
+      if(val != 'O')
+        players[0].pos[0]++;
+    }
+    else if(d == "left" && players[0].pos[0] - 1 >= 0) {
+      var val = game_board.grid[players[0].pos[1]][players[0].pos[0] - 1];
+      if(val != 'O')
+        players[0].pos[0]--;
+    }
+    else if(d == "up" && players[0].pos[1] - 1 >= 0) {
+      var val = game_board.grid[players[0].pos[1] - 1][players[0].pos[0]];
+      if(val != 'O')
+        players[0].pos[1]--;
+    }
+    else if(d == "down" && players[0].pos[1] + 1 < game_board.grid[0].length) {
+      var val = game_board.grid[players[0].pos[1] + 1][players[0].pos[0]];
+      if(val != 'O')
+        players[0].pos[1]++;
+    }
+   
+    for(var i = 0; i < game_board.board.length; i++)
     {
-      var currentRow = game_board.grid[i];
+      var currentRow = game_board.board[i];
       for(var j = 0; j < currentRow.length; j++)
       {
-        var paint = false;
 
         //Lets paint 10px wide cells
         for(var k = 0; k < players.length; k++){
-          console.log("player pos: " + players[k].pos);
-          console.log("dist from i: " + Math.abs(players[k].pos[0] - i))
-          console.log("dist from j: " + Math.abs(players[k].pos[1] - j))
           if(Math.abs(players[k].pos[0] - i) <= 2 && Math.abs(players[k].pos[1] - j) <= 2){
-            console.log("print ", i, j);
-
-            paint = true;
-              if(currentRow[j] == 1)
-                paint_cell(i, j, "black");
-              else
-                paint_cell(i,j, "LightGrey");
-
+              paint_cell(i,j, game_board.board[i][j].color);
               
             break;
 
           }
           else
-            paint_cell(i,j,"white");
+            paint_cell(j,i,"white");
         }
       }
     }
@@ -193,6 +240,8 @@ $(document).ready(function(){
     ctx.fillRect(x*cw, y*cw, cw, cw);
     ctx.strokeStyle = "white";
     ctx.strokeRect(x*cw, y*cw, cw, cw);
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(0, 0, w, h);
   }
     
   //Lets add the keyboard controls now
@@ -208,6 +257,7 @@ $(document).ready(function(){
     paint()
   })
     
+
 })
 </script>
 
@@ -220,7 +270,7 @@ $(document).ready(function(){
     <h1><%=mission.name%></h1>
   </div>
 </div>
-<canvas id="canvas" width="900" height="450"></canvas>
+<canvas id="canvas" width="500" height="500"></canvas>
 <div id="activeUsers" class="container">
 </div>
 <div id="yourItems" class="container">

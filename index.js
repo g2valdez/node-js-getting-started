@@ -227,6 +227,12 @@ io.on('connection', function(socket){
 });
 
 function read_map_files() {
+	for(var i = 0; i < missions.length; i++){
+		missions[i].board = []; // initialize empty array of board
+		var data = fs.readFileSync("maps/"+missions[i].mapfile).toString();
+		if (data != null)
+			missions[i].board = data.toString().split('\r\n');
+	}
 
 }
 
