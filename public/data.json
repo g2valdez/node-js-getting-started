@@ -1,8 +1,8 @@
 {"users": [{"user":"japple", "pass": "seed", "name": "Johnny Appleseed", "items": ["Magnifying Glass", "Dog Treats"], "img": "http://popularpittsburgh.com/wp-content/uploads/2015/02/johnny-appleseed-article.jpg"},
 	{"user":"jhan", "pass": "cock", "name": "John Hancock", "items": ["Binoculars", "Rope"], "img": "https://www.wikitree.com/photo.php/7/7a/JohnHancockSmall.jpeg"}
-		  ] ,
-"missions": [{"name":"The Geisel Labrynth", "img":"https://upload.wikimedia.org/wikipedia/commons/a/aa/Geisel-Library.jpg", "users": [], "items": []},
-	{"name":"Lasers and Books", "img":"https://upload.wikimedia.org/wikipedia/commons/c/c5/13-11-02-olb-by-RalfR-03.jpg", "users": [], "items": []},
-	{"name":"The Revelle Runaway", "img": "http://library.ucsd.edu/dc/object/bb0035302c/_3.jpg", "users": [], "items":[]}
-			]
+],
+"missions": [{"name":"The Geisel Labrynth", "img":"https://upload.wikimedia.org/wikipedia/commons/a/aa/Geisel-Library.jpg", "users": [], "items": [], "mapfile":"Labyrinth.gameboard"},
+	{"name":"Lasers and Books", "img":"https://upload.wikimedia.org/wikipedia/commons/c/c5/13-11-02-olb-by-RalfR-03.jpg", "users": [], "items": [], "mapfile":"Labyrinth.gameboard"},
+	{"name":"The Revelle Runaway", "img": "http://library.ucsd.edu/dc/object/bb0035302c/_3.jpg", "users": [], "items":[], "mapfile":"Labyrinth.gameboard"}
+]
 }

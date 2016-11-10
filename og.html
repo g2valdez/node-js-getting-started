@@ -6,14 +6,16 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
   var socket = io();
-  var user = <%-JSON.stringify(user)%>;
-  var mission = <%-JSON.stringify(mission)%>;
+  var user;
+  var mission;
 
   socket.on('connect', function(){
-    var pack = {
-      'user': user,
-      'mission': mission
-    };
+    user = <%-JSON.stringify(user)%>;
+    mission = <%-JSON.stringify(mission)%>;
+  	var pack = {
+  		'user': user,
+  		'mission': mission
+  	};
 
     $("#yourItems").html("<h2> Your Items: </h2>");
     for(var i=0; i< user.items.length; i++){
@@ -27,11 +29,12 @@
     }
     $("#groupItems").append("<hr>");
 
-    socket.emit('user info', pack);
+  	socket.emit('user info', pack);
   });
 
   socket.on('update users', function(missionU){
     if(missionU.name === mission.name){
+      console.log(mission.users);
       mission.users = missionU.users; //sets local mission users variable
       $("#activeUsers").html("<h2> Active users on this Mission: </h2>");
       for(var i=0; i< mission.users.length; i++){
@@ -61,6 +64,8 @@
   });
 
   function changeItem(item, add){
+    console.log(item);
+    console.log(add);
     var pack = {
       'user': user,
       'mission': mission,
@@ -70,6 +75,9 @@
     socket.emit('change item', pack);
   }
 
+</script>
+
+<script>
 $(document).ready(function(){
   //Canvas stuff
   var canvas = $("#canvas")[0];
@@ -79,104 +87,48 @@ $(document).ready(function(){
   
   //Lets save the cell width in a variable for easy control
   var cw = 50;
-  var d; //keyboard input movement variable
+  var d;
   var food;
   var score;
-
-  var game_board = new Object();
-
-  var players = [];
   
   //Lets create the snake now
   var snake_array; //an array of cells to make up the snake
   
   function init()
   {
-    create_players();
-    create_board(); //Now we can see the food particle
+    d = "right"; //default direction
+    create_snake();
+    create_food(); //Now we can see the food particle
     //finally lets display the score
     score = 0;
-    
+
     //Lets move the snake now using a timer which will trigger the paint function
     //every 60ms
     if(typeof game_loop != "undefined") clearInterval(game_loop);
     game_loop = setInterval(paint, 60);
-
   }
   init();
   
-  function create_players()
+  function create_snake()
   {
-    for(var i = 0; i < mission.users.length; i++)
+    var length = 5; //Length of the snake
+    snake_array = []; //Empty array to start with
+    for(var i = length-1; i>=0; i--)
     {
-      var player = new Object();
-      player.name = mission.users[i];
-      players.push(player)
+      //This will create a horizontal snake starting from the top left
+      snake_array.push({x: i, y:0});
     }
   }
   
-  //Lets create the board now
-  function create_board()
+  //Lets create the food now
+  function create_food()
   {
-    game_board.grid = mission.board;
-    game_board.board = new Array(game_board.grid.length);
-    console.log(game_board.board.length);
-    for(var i = 0; i < game_board.grid.length; i++)
-    {
-      game_board.board[i] = new Array(game_board.grid.length);
-    }
-    for(var i = 0; i < game_board.grid.length; i++)
-    {
-      var currentCol = game_board.grid[i];
-      for(var j = 0; j < currentCol.length; j++)
-      {
-        console.log("(i,j): (" + i + "," + j + ")");
-        var cell = new Object();
-        cell.type = currentCol[j];
-        switch(currentCol[j]) {
-          case ' ':
-            cell.color = "LightGrey";
-            break;
-          case 'O':
-            cell.color = "black";
-            cell.destructable = false;
-            break;
-          case 'o':
-            cell.color = "#404040";
-            cell.destructable = true;
-            break;
-          case 'R':
-            cell.color = "red"
-            break;
-          case 'K':
-            cell.color = "yellow"
-            break;
-          case '1':
-            players[0].pos = [j,i];
-            cell.type = ' ';
-            cell.color = "LightGrey"
-            break;
-          case '2':
-            //code
-            break;
-          case 'T':
-            cell.color = "orange"
-            //code
-            break;
-          case 'G':
-            cell.color = "green"
-            //code
-            break;
-          case '*':
-            cell.color = "purple"
-            //code
-            break;
-          default:
-            console.log("you suck");
-        }
-        game_board.board[j][i] = cell;
-      }
-    }
+    food = {
+      x: Math.round(Math.random()*(w-cw)/cw), 
+      y: Math.round(Math.random()*(h-cw)/cw), 
+    };
+    //This will create a cell with x/y between 0-44
+    //Because there are 45(450/10) positions accross the rows and columns
   }
   
   //Lets paint the snake now
@@ -184,74 +136,91 @@ $(document).ready(function(){
   {
     //To avoid the snake trail we need to paint the BG on every frame
     //Lets paint the canvas now
-    // ctx.fillStyle = "white";
-    // ctx.fillRect(0, 0, w, h);
-
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(0, 0, w, h);
+    
+    //The movement code for the snake to come here.
+    //The logic is simple
+    //Pop out the tail cell and place it infront of the head cell
+    var nx = snake_array[0].x;
+    var ny = snake_array[0].y;
     //These were the position of the head cell.
     //We will increment it to get the new head position
     //Lets add proper direction based movement now
-    if(d == "right" && players[0].pos[0] + 1 < game_board.grid.length){
-      var val = game_board.grid[players[0].pos[1]][players[0].pos[0] + 1];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[0]++;
-    }
-    else if(d == "left" && players[0].pos[0] - 1 >= 0) {
-      var val = game_board.grid[players[0].pos[1]][players[0].pos[0] - 1];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[0]--;
-    }
-    else if(d == "up" && players[0].pos[1] - 1 >= 0) {
-      var val = game_board.grid[players[0].pos[1] - 1][players[0].pos[0]];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[1]--;
-    }
-    else if(d == "down" && players[0].pos[1] + 1 < game_board.grid[0].length) {
-      var val = game_board.grid[players[0].pos[1] + 1][players[0].pos[0]];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[1]++;
-    }
-   
-    for(var i = 0; i < game_board.board.length; i++)
+    if(d == "right") nx++;
+    else if(d == "left") nx--;
+    else if(d == "up") ny--;
+    else if(d == "down") ny++;
+    
+    //Lets add the game over clauses now
+    //This will restart the game if the snake hits the wall
+    //Lets add the code for body collision
+    //Now if the head of the snake bumps into its body, the game will restart
+    if(nx == -1 || nx == w/cw || ny == -1 || ny == h/cw || check_collision(nx, ny, snake_array))
     {
-      var currentRow = game_board.board[i];
-      for(var j = 0; j < currentRow.length; j++)
-      {
-
-        //Lets paint 10px wide cells
-        for(var k = 0; k < players.length; k++){
-          if(Math.abs(players[k].pos[0] - i) <= 2 && Math.abs(players[k].pos[1] - j) <= 2){
-              paint_cell(i,j, game_board.board[i][j].color);
-              
-            break;
-
-          }
-          else
-            paint_cell(i,j,"white");
-        }
-      }
+      //restart game
+      init();
+      //Lets organize the code a bit now.
+      return;
     }
-
-    for(var i = 0; i < players.length; i++)
+    
+    //Lets write the code to make the snake eat the food
+    //The logic is simple
+    //If the new head position matches with that of the food,
+    //Create a new head instead of moving the tail
+    if(nx == food.x && ny == food.y)
     {
+      var tail = {x: nx, y: ny};
+      score++;
+      //Create new food
+      create_food();
+    }
+    else
+    {
+      var tail = snake_array.pop(); //pops out the last cell
+      tail.x = nx; tail.y = ny;
+    }
+    //The snake can now eat the food.
+    
+    snake_array.unshift(tail); //puts back the tail as the first cell
+    
+    for(var i = 0; i < snake_array.length; i++)
+    {
+      var c = snake_array[i];
       //Lets paint 10px wide cells
-      paint_cell(players[i].pos[0], players[i].pos[1], "blue");
+      paint_cell(c.x, c.y);
     }
-
-    d = null;
-
+    
+    //Lets paint the food
+    paint_cell(food.x, food.y);
+    //Lets paint the score
+    var score_text = "Score: " + score;
+    ctx.fillText(score_text, 5, h-5);
   }
   
   //Lets first create a generic function to paint cells
-  function paint_cell(x, y, color)
+  function paint_cell(x, y)
   {
-    ctx.fillStyle = color;
+    ctx.fillStyle = "blue";
     ctx.fillRect(x*cw, y*cw, cw, cw);
     ctx.strokeStyle = "white";
     ctx.strokeRect(x*cw, y*cw, cw, cw);
-    ctx.strokeStyle = "black";
-    ctx.strokeRect(0, 0, w, h);
   }
-    
+  
+  function check_collision(x, y, array)
+  {
+    //This function will check if the provided x/y coordinates exist
+    //in an array of cells or not
+    for(var i = 0; i < array.length; i++)
+    {
+      if(array[i].x == x && array[i].y == y)
+       return true;
+    }
+    return false;
+  }
+  
   //Lets add the keyboard controls now
   $(document).keydown(function(e){
     e.preventDefault();
@@ -264,7 +233,6 @@ $(document).ready(function(){
     //The snake is now keyboard controllable
   })
     
-
 })
 </script>
 
@@ -277,7 +245,7 @@ $(document).ready(function(){
     <h1><%=mission.name%></h1>
   </div>
 </div>
-<canvas id="canvas" width="500" height="500"></canvas>
+<canvas id="canvas" width="900" height="450"></canvas>
 <div id="activeUsers" class="container">
 </div>
 <div id="yourItems" class="container">

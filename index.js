@@ -1,8 +1,11 @@
 var express = require('express'); //our http request handler
 var bodyParser = require('body-parser'); //used to funnel in form data such as login
 var cookieParser = require('cookie-parser'); //used to give users cookies when logging in
+var fs = require('fs'); //file I/O for board map 
 var users = require('./public/data.json').users; //reads data from data.json
 var missions = require('./public/data.json').missions;
+
+read_map_files(); // for each mission, load its map data
 
 var app = express(); //creates a new web server
 var http = require('http').Server(app); // funnels web server through http
@@ -50,7 +53,6 @@ app.post('/login', function(request, response){
 				return;
 			}
 		}
-
 	}
 
 	console.log("wrong user");
@@ -223,6 +225,16 @@ io.on('connection', function(socket){
 	});
 
 });
+
+function read_map_files() {
+	for(var i = 0; i < missions.length; i++){
+		missions[i].board = []; // initialize empty array of board
+		var data = fs.readFileSync("maps/"+missions[i].mapfile).toString();
+		if (data != null)
+			missions[i].board = data.toString().split('\r\n');
+	}
+
+}
 
 
 http.listen(app.get('port'), function() {
