@@ -137,33 +137,7 @@ app.get('/leaderboards', function(request, response) {
 });
 
 app.get('/edit_profile', function(request, response) {
-	var user = request.body.username;
-	var pass = request.body.password;
-	var newUser = {
-		user: user,
-		pass: pass
-	};
-	for (var i in users) {
-		if (users[i].user === newUser.user){
-			if (users[i].pass === newUser.pass){
-				response.cookie('user', users[i]);
-				response.render('pages/edit_profile', {
-					user_name: users[i].name,
-					user_img: users[i].img
-				});
-				return;
-			}
-			else {
-				console.log("right user wrong pass");
-				response.render('pages/login');
-				return;
-			}
-		}
-	}
-
-	console.log("wrong user");
-	response.render('pages/login');
-
+  response.render('pages/edit_profile');
 });
 
 var allClients = [];

@@ -8,9 +8,6 @@
 
   <% include ../partials/nav.ejs %>
 
-  user_name: users[i].name
-  user_img: users[i].img
-
 <div class="jumbotron text-center">
   <div class="container">
     <h1>Edit Profile</h1>
@@ -28,7 +25,6 @@
 		<br><br><br>
 
 		<div class="col-xs-6 text-center">
-			<img src=<%= user_img %> class="col-xs-4">
 			<h3 class="col-xs-6 text-center" >Username</h2>
 			<input id="user" type="text" name="username" ><br><br>
 			<hr>
