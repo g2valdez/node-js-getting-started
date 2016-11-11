@@ -137,7 +137,46 @@ app.get('/leaderboards', function(request, response) {
 });
 
 app.get('/edit_profile', function(request, response) {
-  response.render('pages/edit_profile');
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+		}
+	}
+
+  	response.render('pages/edit_profile', {
+  		user_name: users[j].name,
+	    user_img: users[j].img
+
+  	});
+});
+
+app.post('/saveProfile', function(request, response) {
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+		}
+	}
+	console.log(request ,'\n\n', request.body, request.profileImage)
+	users[j].img = request.body.profileImage;
+  	response.render('pages/edit_profile', {
+  		user_name: users[j].name,
+	    user_img: users[j].img
+
+  	});
 });
 
 var allClients = [];

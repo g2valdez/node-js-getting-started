@@ -15,15 +15,18 @@
 </div>
 
 <div class="row">
-		
-		<div class="col-xs-12 text-center">
-			<a  href="/mission_browser" class="big_button row text-center">
-		<h1>
+		<img src="<%= user_img %>">
+		<form action="/saveProfile" method="post"/>
+        <div class="col-xs-12 text-center">
+			<h1>
 			Change Picture 
+			
 		</h1>
-		</a>
+		<div class="col-xs-12 text-center">
+			<label>
+		<input type='file' name="profileImage" />
+	</label>
 		<br><br><br>
-
 		<div class="col-xs-6 text-center">
 			<h3 class="col-xs-6 text-center" >Username</h2>
 			<input id="user" type="text" name="username" ><br><br>
@@ -41,11 +44,10 @@
 		</div>
 
 		<div class="col-xs-12 text-center">
-			<a  href="/mission_browser" class="big_button row text-center">
-		<h1>
+		<button>
 			Save Changes  
-		</h1>
-		</a>
+		</button>
+		</form>
 
 	</div>
 
