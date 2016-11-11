@@ -11,26 +11,34 @@
 <div class="jumbotron text-center">
   <div class="container">
     <h1>Sign-Up</h1>
-    	<div class="container" id="signUp">
-    		<p>Required values are marked by an asterisk (*)</p>
+    	<fieldset id="signUp">
+    		<p style="color:red;">Required values are marked by an asterisk (*)</p>
 
-    		<label> Username <br />
+    		<label> Username:
     			<input name="name" id="uName" placeholder="Username" required="required"/>
     		</label>
-    		<label> Password <br />
+        <hr />
+    		<label> Password: 
     			<input name="name" id="pWord" placeholder="Password" required="required"/>
     		</label>
-    		<label> Confirm Password <br />
-    			<input name="name" id="pWord2" required="required"/>
+        <hr />
+    		<label> Confirm Password: 
+      		<input name="name" id="pWord2" required="required"/>
     		</label>
-        <label> Email (Optional) <br />
+        <hr />
+        <label> Email (Optional):
           <input name="name" id="email"  placeholder="johndoe@email.com"/>
         </label>
-        <label> Phone Number (Optional) <br />
+        <hr />
+        <label> Phone Number (Optional):
           <input name="name" id="phone"  placeholder="XXX-XXX-XXXX"/>
         </label>
-    	 </div>
-    <h2><a href="/home">Home</a></h2>
+        <hr />
+
+    	 </fieldset>
+    <h2><a href="/login">Play Now!</h2>
+
+    <h2><a href="/">Home</a></h2>
   </div>
 </div>
 
