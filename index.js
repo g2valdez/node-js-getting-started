@@ -4,8 +4,11 @@ var cookieParser = require('cookie-parser'); //used to give users cookies when l
 var fs = require('fs'); //file I/O for board map 
 var users = require('./public/data.json').users; //reads data from data.json
 var missions = require('./public/data.json').missions;
+var items = require('./public/data.json').items;
 
 read_map_files(); // for each mission, load its map data
+
+load_user_items(); // for each user, load its corresponding item data
 
 var app = express(); //creates a new web server
 var http = require('http').Server(app); // funnels web server through http
@@ -136,8 +139,10 @@ app.get('/mission/:missionName', function(request, response) {
 			}
 
 		}
-		response.render('pages/mission', {mission:missions[i],
-			user: users[j]});
+		response.render('pages/mission', {
+			mission:missions[i],
+			user: users[j]
+		});
 	}
 
 });
@@ -147,7 +152,46 @@ app.get('/leaderboards', function(request, response) {
 });
 
 app.get('/edit_profile', function(request, response) {
-  response.render('pages/edit_profile');
+  var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+		}
+	}
+
+  	response.render('pages/edit_profile', {
+  		user_name: users[j].name,
+	    user_img: users[j].img
+
+  	});
+});
+
+app.post('/saveProfile', function(request, response) {
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+		}
+	}
+	console.log(request ,'\n\n', request.body, request.profileImage)
+	users[j].img = request.body.profileImage;
+  	response.render('pages/edit_profile', {
+  		user_name: users[j].name,
+	    user_img: users[j].img
+
+  	});
 });
 
 var allClients = [];
@@ -181,11 +225,11 @@ io.on('connection', function(socket){
 				break;
 			}
 		}
-		if(pack.add){
-			console.log("add ", pack.item);
+		if(pack.add){ //add item from mission items, remove from user items
+			console.log("add ", pack.item.name);
 			missions[j].items.push(pack.item);//add to mission items
 			for(var k = 0; k < users[i].items.length; k++){
-				if(pack.item === users[i].items[k]){
+				if(pack.item.name === users[i].items[k].name){
 					break;
 				}
 			}
@@ -193,9 +237,9 @@ io.on('connection', function(socket){
 
 		}
 		else{ //remove from mission items, add to user items
-			console.log("remove ", pack.item);
+			console.log("remove ", pack.item.name);
 			for(var k = 0; k < missions[j].items.length; k++){
-				if(pack.item === missions[j].items[k]){
+				if(pack.item.name === missions[j].items[k].name){
 					break;
 				}
 			}
@@ -207,6 +251,28 @@ io.on('connection', function(socket){
 			mission: missions[j]
 		};
 		io.emit('update items', pack);
+	});
+
+	socket.on('user ready', function(pack){
+		for(var j = 0; j < missions.length; j++){
+			console.log(j);
+			console.log(missions[j].name);
+			console.log(pack.mission.name);
+			if(missions[j].name === pack.mission.name){
+				missions[j].usersReady++;
+				break;
+			}
+		}
+		console.log(missions[j].usersReady);
+		io.emit('begin game', missions[j].usersReady);
+	});
+
+	socket.on('user movement', function(pack){
+		io.emit('user move', pack);
+	});
+
+	socket.on('update board', function(pack){
+		io.emit('board update', pack);
 	});
 
 	socket.on('disconnect', function(){
@@ -230,7 +296,6 @@ io.on('connection', function(socket){
 			}
 		}
 		missions[j].users.splice(k, 1); // remove the user from the missions user array
-		console.log(missions[j].users);
 		io.emit('update users', missions[j]);
 	});
 
@@ -239,13 +304,22 @@ io.on('connection', function(socket){
 function read_map_files() {
 	for(var i = 0; i < missions.length; i++){
 		missions[i].board = []; // initialize empty array of board
+		missions[i].usersReady = 0;
 		var data = fs.readFileSync("maps/"+missions[i].mapfile).toString();
 		if (data != null)
-			missions[i].board = data.toString().split('\r\n');
+			missions[i].board = data.toString().split('|');
 	}
-
+	console.log(missions[0].board);
 }
 
+function load_user_items() {
+	for(var i = 0; i < users.length; i++){
+		users[i].items = []; // initialize empty array of item objects
+		for(var j = 0; j < users[i].item_keys.length; j++){
+			users[i].items.push(items[users[i].item_keys[j]]);
+		}
+	}
+}
 
 http.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));

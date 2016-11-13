@@ -1,8 +1,13 @@
-{"users": [{"user":"japple", "pass": "seed", "name": "Johnny Appleseed", "items": ["Magnifying Glass", "Dog Treats"], "img": "http://popularpittsburgh.com/wp-content/uploads/2015/02/johnny-appleseed-article.jpg"},
-	{"user":"jhan", "pass": "cock", "name": "John Hancock", "items": ["Binoculars", "Rope"], "img": "https://www.wikitree.com/photo.php/7/7a/JohnHancockSmall.jpeg"}
+{"users": [{"user":"japple", "pass": "seed", "name": "Johnny Appleseed", "item_keys": [0, 1], "img": "http://popularpittsburgh.com/wp-content/uploads/2015/02/johnny-appleseed-article.jpg"},
+	{"user":"jhan", "pass": "cock", "name": "John Hancock", "item_keys": [3,2], "img": "https://www.wikitree.com/photo.php/7/7a/JohnHancockSmall.jpeg"}
 ],
-"missions": [{"name":"The Geisel Labrynth", "img":"https://upload.wikimedia.org/wikipedia/commons/a/aa/Geisel-Library.jpg", "users": [], "items": [], "mapfile":"Labyrinth.gameboard"},
+"missions": [{"name":"The Geisel Labrynth", "img":"https://upload.wikimedia.org/wikipedia/commons/a/aa/Geisel-Library.jpg", "users": [], "items": [], "mapfile":"ptest.gameboard"},
 	{"name":"Lasers and Books", "img":"https://upload.wikimedia.org/wikipedia/commons/c/c5/13-11-02-olb-by-RalfR-03.jpg", "users": [], "items": [], "mapfile":"Labyrinth.gameboard"},
 	{"name":"The Revelle Runaway", "img": "http://library.ucsd.edu/dc/object/bb0035302c/_3.jpg", "users": [], "items":[], "mapfile":"Labyrinth.gameboard"}
+],
+"items":[{"name":"Teleporter","key":"P","img":"https://openclipart.org/image/2400px/svg_to_png/224700/warp-zone-glitch-remix.png"},
+	{"name":"Auto-Hack Device","key":"G","img":"https://s-media-cache-ak0.pinimg.com/564x/50/ed/97/50ed9795a8028423e72060dbf8d39dea.jpg"},
+	{"name":"X-Ray Goggles","key":"B","img":"http://i1293.photobucket.com/albums/b589/magraitr/CODEX/TECH/tactica_sensor_jamming.jpg"},
+	{"name":"Stun Gun","key":"Y","img":"http://cdn.hiconsumption.com/wp-content/uploads/2015/05/Best-Stun-Guns.jpg"}
 ]
 }

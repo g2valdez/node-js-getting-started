@@ -8,6 +8,7 @@
   var socket = io();
   var user = <%-JSON.stringify(user)%>;
   var mission = <%-JSON.stringify(mission)%>;
+  var missionActive = false;
 
   socket.on('connect', function(){
     var pack = {
@@ -17,15 +18,15 @@
 
     $("#yourItems").html("<h2> Your Items: </h2>");
     for(var i=0; i< user.items.length; i++){
-      $("#yourItems").append('<hr><button type="button" onclick="changeItem(\'' + user.items[i] + '\', true)">' + user.items[i] + '</button>');
+      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + user.items[i].name + '</button></div>');
     }
     $("#yourItems").append("<hr>");
 
-    $("#groupItems").html("<h2> Mission Items To Submit: </h2>");
-    for(var i=0; i< mission.items.length; i++){
-      $("#groupItems").append('<hr><button type="button" onclick="changeItem(\'' + mission.items[i] + '\', false)">' + mission.items[i] + '</button>');
-    }
-    $("#groupItems").append("<hr>");
+    $("#groupItems").html("<h2> Items to Trade: </h2>");
+      for(var i=0; i< mission.items.length; i++){
+        $("#groupItems").append('<hr><div class="row groupItem" itemID="'+i+'"><img src="'+mission.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + mission.items[i].name + '</button></div>');
+      }
+      $("#groupItems").append("<hr>");
 
     socket.emit('user info', pack);
   });
@@ -41,54 +42,143 @@
     }
   });
 
-  socket.on('update items', function(pack){
-    mission.items = pack.mission.items;
-    if(user.user === pack.user.user) //if the update came from the user, update him
-      user.items = pack.user.items;
+$(document).ready(function(){
+  var canvas, ctx, w, h;
+  var hacking = null; //checks if we're currently hacking a space
+  var hacking_tm = null; //checks if teammate is currently hacking a spot
+  $("#startmission").click(function(){
+    var leng = mission.board.length;
+    $("#activePage").html('<canvas id="canvas" width="'+(leng * 50)+'" height="'+(leng * 50)+'"></canvas>');
+    missionActive = true;
+    //Canvas stuff
+    canvas = $("#canvas")[0];
+    ctx = canvas.getContext("2d");
+    w = $("#canvas").width();
+    h = $("#canvas").height();
 
-    $("#yourItems").html("<h2> Your Items: </h2>");
-    for(var i=0; i< user.items.length; i++){
-      $("#yourItems").append('<hr><button type="button" onclick="changeItem(\'' + user.items[i] + '\', true)">' + user.items[i] + '</button>');
-    }
-    $("#yourItems").append("<hr>");
-
-    $("#groupItems").html("<h2> Items to Trade: </h2>");
-    for(var i=0; i< mission.items.length; i++){
-      $("#groupItems").append('<hr><button type="button" onclick="changeItem(\'' + mission.items[i] + '\', false)">' + mission.items[i] + '</button>');
-    }
-    $("#groupItems").append("<hr>");
+    // draw (Waiting for other player) on canvas
+    var pack = {
+          'user': user,
+          'mission': mission
+    };
+    socket.emit('user ready', pack);
 
   });
 
-  function changeItem(item, add){
+
+  $("#groupItems").on("click", ".groupItem", function(){
+
+    var itemID = $(this).attr('itemID');
+    var item = mission.items[itemID];
     var pack = {
-      'user': user,
-      'mission': mission,
-      'item': item,
-      'add': add
+        'user': user,
+        'mission': mission,
+        'item': item,
+        'add': false
     };
     socket.emit('change item', pack);
-  }
+  })
 
-$(document).ready(function(){
-  //Canvas stuff
-  var canvas = $("#canvas")[0];
-  var ctx = canvas.getContext("2d");
-  var w = $("#canvas").width();
-  var h = $("#canvas").height();
+  $("#yourItems").on("click", ".yourItem", function(){
+    var itemID = $(this).attr('itemID');
+    var item = user.items[itemID];
+    console.log(itemID);
+    console.log(item);
+
+    if(missionActive == false)
+    {
+      var pack = {
+          'user': user,
+          'mission': mission,
+          'item': item,
+          'add': true
+      };
+      socket.emit('change item', pack);
+    }
+    else { //click on the buttons to use the items :)
+      switch(item.key){
+        case 'P': //teleporter af
+          for(var x = -1; x < 2; x=x+2){
+            //check if theres a valid left/right movement
+            if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
+              if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].color === 'black') {
+                if(game_board.board[players[user.i].pos[0] + x + x][players[user.i].pos[1]].walk === true) {
+                  players[user.i].pos[0]+=(x+x);
+                  break;
+                }
+              }
+            }
+            //check if there's a valid up/down movement
+            if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
+              if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].color === 'black') {
+                if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x + x].walk === true) {
+                  players[user.i].pos[1] += (x + x);
+                  break;
+                }
+              }
+            }
+
+          }
+          break;
+        case 'G':
+          //code
+          break;
+        case 'Y': //stun gunner
+          console.log("stun gun action!");
+          var update_board = false;
+          var pack = new Object();
+          for(var x = -2; x < 3; x++){
+            //check if new value is valid
+            if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
+              console.log("checking left/right: " + game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type);
+              if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type == 'R') {
+                update_board = true;
+                pack.userIndex = user.i;
+                pack.pos = [players[user.i].pos[0] + x, players[user.i].pos[1]];
+                pack.color = 'LightGrey';
+                pack.type = ' ';
+                pack.walk = true;
+                break;
+              }
+            }
+            if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
+              console.log("checking above/below: " + game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].type);
+              if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]+x].type == 'R') {
+                update_board = true;
+                pack.userIndex = user.i;
+                pack.pos = [players[user.i].pos[0], players[user.i].pos[1]+x];
+                pack.color = 'LightGrey';
+                pack.type = ' ';
+                pack.walk = true;
+                break;
+              }
+            }
+            
+          }
+          if(update_board == true){
+            socket.emit('update board', pack);
+          }
+          break;
+        case 'B':
+          //cpde
+          break;
+        default:
+          //code
+          break;
+      }
+    }
+  });
+
   
   //Lets save the cell width in a variable for easy control
   var cw = 50;
-  var d; //keyboard input movement variable
-  var food;
+  var d = null; //keyboard input movement variable
   var score;
 
   var game_board = new Object();
 
   var players = [];
   
-  //Lets create the snake now
-  var snake_array; //an array of cells to make up the snake
   
   function init()
   {
@@ -103,7 +193,6 @@ $(document).ready(function(){
     game_loop = setInterval(paint, 60);
 
   }
-  init();
   
   function create_players()
   {
@@ -118,9 +207,14 @@ $(document).ready(function(){
   //Lets create the board now
   function create_board()
   {
+    var hp, jp, tp;
+    var hc = [];
+    var jc = [];
+    var tc = [];
     game_board.grid = mission.board;
+    game_board.numKeys = 0;
+    game_board.keysCollected = 0;
     game_board.board = new Array(game_board.grid.length);
-    console.log(game_board.board.length);
     for(var i = 0; i < game_board.grid.length; i++)
     {
       game_board.board[i] = new Array(game_board.grid.length);
@@ -130,86 +224,97 @@ $(document).ready(function(){
       var currentCol = game_board.grid[i];
       for(var j = 0; j < currentCol.length; j++)
       {
-        console.log("(i,j): (" + i + "," + j + ")");
         var cell = new Object();
         cell.type = currentCol[j];
         switch(currentCol[j]) {
           case ' ':
             cell.color = "LightGrey";
+            cell.walk = true;
             break;
           case 'O':
             cell.color = "black";
             cell.destructable = false;
+            cell.walk = false;
             break;
           case 'o':
-            cell.color = "#404040";
+            cell.color = "#303030";
             cell.destructable = true;
+            cell.walk = false;
             break;
           case 'R':
             cell.color = "red"
+            cell.walk = false;
+            break;
+          case 'H':
+            cell.color = "green"
+            hp = cell;
+            cell.walk = true;
+            break;
+          case 'J':
+            cell.color = "green"
+            jp = cell;
+            cell.walk = true;
             break;
           case 'K':
             cell.color = "yellow"
+            cell.walk = true;
+            game_board.numKeys++;
+            break;
+          case 'h':
+            cell.color = "black"
+            hc.push(cell);
+            cell.walk = false;
+            break;
+          case 'j':
+            cell.color = "black"
+            jc.push(cell);
+            cell.walk = false;
             break;
           case '1':
             players[0].pos = [j,i];
             cell.type = ' ';
             cell.color = "LightGrey"
+            cell.walk = true;
             break;
           case '2':
-            //code
+            players[1].pos = [j,i];
+            cell.type = ' ';
+            cell.color = "LightGrey"
+            cell.walk = true;
             break;
           case 'T':
-            cell.color = "orange"
-            //code
-            break;
-          case 'G':
             cell.color = "green"
-            //code
+            cell.walk = true;
+            tp = cell;
             break;
+          case 't':
+            cell.color = "black"
+            cell.walk = false;
+            tc.push(cell);
+            break;
+          case 'P':
+            cell.color = "pink"
+            cell.walk = true;
+            break
           case '*':
             cell.color = "purple"
-            //code
+            cell.walk = true;
             break;
           default:
-            console.log("you suck");
+            console.log("you suck " + currentCol[j]);
         }
         game_board.board[j][i] = cell;
       }
     }
+    hp.child = hc;
+    jp.child = jc;
+    tp.child = tc;
   }
   
-  //Lets paint the snake now
+  //Lets paint the board now
   function paint()
   {
-    //To avoid the snake trail we need to paint the BG on every frame
-    //Lets paint the canvas now
-    // ctx.fillStyle = "white";
-    // ctx.fillRect(0, 0, w, h);
 
-    //These were the position of the head cell.
-    //We will increment it to get the new head position
-    //Lets add proper direction based movement now
-    if(d == "right" && players[0].pos[0] + 1 < game_board.grid.length){
-      var val = game_board.grid[players[0].pos[1]][players[0].pos[0] + 1];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[0]++;
-    }
-    else if(d == "left" && players[0].pos[0] - 1 >= 0) {
-      var val = game_board.grid[players[0].pos[1]][players[0].pos[0] - 1];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[0]--;
-    }
-    else if(d == "up" && players[0].pos[1] - 1 >= 0) {
-      var val = game_board.grid[players[0].pos[1] - 1][players[0].pos[0]];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[1]--;
-    }
-    else if(d == "down" && players[0].pos[1] + 1 < game_board.grid[0].length) {
-      var val = game_board.grid[players[0].pos[1] + 1][players[0].pos[0]];
-      if(val.toUpperCase() != 'O')
-        players[0].pos[1]++;
-    }
    
     for(var i = 0; i < game_board.board.length; i++)
     {
@@ -251,19 +356,180 @@ $(document).ready(function(){
     ctx.strokeStyle = "black";
     ctx.strokeRect(0, 0, w, h);
   }
-    
+
   //Lets add the keyboard controls now
   $(document).keydown(function(e){
     e.preventDefault();
+    var should_update = false;
     var key = e.which;
     //We will add another clause to prevent reverse gear
     if(key == "37") d = "left";
     else if(key == "38") d = "up";
     else if(key == "39") d = "right";
     else if(key == "40") d = "down";
-    //The snake is now keyboard controllable
+
+    //Lets add proper direction based movement now
+    if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid.length){
+      var val = game_board.board[players[user.i].pos[0] + 1][players[user.i].pos[1]];
+      if(val.walk == true) {
+        should_update = true;
+        players[user.i].pos[0]++;
+      }
+    }
+    else if(d == "left" && players[user.i].pos[0] - 1 >= 0) {
+      var val = game_board.board[players[user.i].pos[0] - 1][players[user.i].pos[1]];
+      if(val.walk == true) {
+        should_update = true;
+        players[user.i].pos[0]--;
+      }
+    }
+    else if(d == "up" && players[user.i].pos[1] - 1 >= 0) {
+      var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] - 1];
+      if(val.walk == true) {
+        should_update = true;
+        players[user.i].pos[1]--;
+      }
+    }
+    else if(d == "down" && players[user.i].pos[1] + 1 < game_board.grid[0].length) {
+      var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + 1];
+      if(val.walk == true) {
+        should_update = true;
+        players[user.i].pos[1]++;
+      }
+    }
+
+    if(hacking !== null) {
+      for(var i = 0; i < hacking.child.length; i++){
+        hacking.child[i].walk = false;
+        hacking.child[i].color = 'black';
+      }
+      hacking = null;
+    }
+
+    //check if we hit a key or the goal state
+    var curr_cell = game_board.board[players[user.i].pos[0]][players[user.i].pos[1]];
+    if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+      for(var q = 0; q < user.item_keys.length; q++){
+        if(user.item_keys[q] == 1){
+          hacking = curr_cell;
+          for(var i = 0; i < curr_cell.child.length; i++){
+            curr_cell.child[i].walk = true;
+            curr_cell.child[i].color = 'LightGrey';
+          }
+          break;
+        }
+      }
+    }
+    else if(curr_cell.type == 'K') {
+      game_board.keysCollected++;
+      curr_cell.type = ' ';
+      curr_cell.color = 'LightGrey';
+    }
+    else if(curr_cell.type == '*'){
+      if(game_board.keysCollected == game_board.numKeys){
+        clearInterval(game_loop);
+        $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
+        console.log("YOU DID IT")
+      }
+
+    }
+    if(should_update == true) {
+      var pack = {
+        items: user.item_keys,
+        userIndex: user.i,
+        pos: players[user.i].pos,
+        mission: mission
+      }
+      socket.emit('user movement', pack);
+    }
   })
-    
+
+  socket.on('begin game', function(usersReady){
+    for(var i = 0; i < mission.users.length; i++){
+      if(mission.users[i] === user.user){
+        user.i = i;
+      }
+    }
+    if(usersReady == 2) {
+      console.log("START");
+      init()
+    }
+  });
+
+  socket.on('board update', function(pack){
+    var curr_cell = game_board.board[pack.pos[0]][pack.pos[1]];
+    curr_cell.color = pack.color;
+    curr_cell.type = pack.type;
+    curr_cell.walk = pack.walk;
+  });
+
+  socket.on('user move', function(pack){
+    if(pack.userIndex !== user.i)
+    {
+
+      players[pack.userIndex].pos = pack.pos;
+
+      if(hacking_tm !== null) {
+        for(var i = 0; i < hacking_tm.child.length; i++){
+          hacking_tm.child[i].walk = false;
+          hacking_tm.child[i].color = 'black';
+        }
+        hacking_tm = null;
+      }
+
+      //check if we hit a key or the goal state
+      var curr_cell = game_board.board[players[pack.userIndex].pos[0]][players[pack.userIndex].pos[1]];
+      if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+        for(var q = 0; q < pack.items.length; q++){
+          if(pack.items[q] == 1){ //if this dude is the hacker
+            hacking_tm = curr_cell;
+            for(var i = 0; i < curr_cell.child.length; i++){
+              curr_cell.child[i].walk = true;
+              curr_cell.child[i].color = 'LightGrey';
+            }
+            break;
+          }
+        }
+      }
+      else if(curr_cell.type == 'K') {
+        game_board.keysCollected++;
+        console.log("key collected! Total keys: "+ game_board.keysCollected);
+        curr_cell.type = ' ';
+        curr_cell.color = 'LightGrey';
+      }
+      else if(curr_cell.type == '*'){
+        if(game_board.keysCollected == game_board.numKeys){
+          clearInterval(game_loop);
+          $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
+          console.log("YOU DID IT")
+        }
+      }
+    }
+  });
+
+
+
+  socket.on('update items', function(pack){
+    mission.items = pack.mission.items;
+    if(user.user === pack.user.user) //if the update came from the user, update him
+      user.items = pack.user.items;
+
+    $("#yourItems").html("<h2> Your Items: </h2>");
+    for(var i=0; i< user.items.length; i++){
+      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + user.items[i].name + '</button></div>');
+    }
+    $("#yourItems").append("<hr>");
+
+    if(missionActive == false)
+    {
+      $("#groupItems").html("<h2> Items to Trade: </h2>");
+        for(var i=0; i< mission.items.length; i++){
+          $("#groupItems").append('<hr><div class="row groupItem" itemID="'+i+'"><img src="'+mission.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + mission.items[i].name + '</button></div>');
+        }
+        $("#groupItems").append("<hr>");
+      }
+
+  });
 
 })
 </script>
@@ -277,12 +543,18 @@ $(document).ready(function(){
     <h1><%=mission.name%></h1>
   </div>
 </div>
-<canvas id="canvas" width="500" height="500"></canvas>
-<div id="activeUsers" class="container">
+
+
+
+<div id="activePage">
+  <button type="button" id="startmission"> Start Mission </button>
+  <div id="activeUsers" class="container">
+  </div>
+  <div id="groupItems" class="container">
+  </div>
+
 </div>
 <div id="yourItems" class="container">
-</div>
-<div id="groupItems" class="container">
 </div>
 
 </body>
