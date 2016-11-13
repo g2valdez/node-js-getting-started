@@ -85,7 +85,17 @@ app.get('/home', function(request, response) {
 });
 
 app.get('/stats', function(request, response) {
-  response.render('pages/stats');
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		response.render('pages/stats', {
+			user_name: cookie.name,
+			user_img: cookie.img
+		});
+	}
 });
 
 app.get('/mission_browser', function(request, response) {
