@@ -18,15 +18,9 @@
 
     $("#yourItems").html("<h2> Your Items: </h2>");
     for(var i=0; i< user.items.length; i++){
-      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + user.items[i].name + '</button></div>');
+      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><div class="col-xs-6"><button class="row" type="button">' + user.items[i].name + '</button><p class="row">'+ user.items[i].desc +'</p></div></div>');
     }
     $("#yourItems").append("<hr>");
-
-    $("#groupItems").html("<h2> Items to Trade: </h2>");
-      for(var i=0; i< mission.items.length; i++){
-        $("#groupItems").append('<hr><div class="row groupItem" itemID="'+i+'"><img src="'+mission.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + mission.items[i].name + '</button></div>');
-      }
-      $("#groupItems").append("<hr>");
 
     socket.emit('user info', pack);
   });
@@ -46,15 +40,28 @@ $(document).ready(function(){
   var canvas, ctx, w, h;
   var hacking = null; //checks if we're currently hacking a space
   var hacking_tm = null; //checks if teammate is currently hacking a spot
+  var p2_on_goal = false;
+
+  //Lets save the cell width in a variable for easy control
+  var cw = 50;
+  var d = null; //keyboard input movement variable
+  var score;
+
+  var game_board = new Object();
+
+  var players = [];
+
   $("#startmission").click(function(){
     var leng = mission.board.length;
-    $("#activePage").html('<canvas id="canvas" width="'+(leng * 50)+'" height="'+(leng * 50)+'"></canvas>');
+    $("#activePage").html('<canvas id="canvas" width="'+(leng * cw)+'" height="'+(leng * cw)+'"></canvas>');
     missionActive = true;
     //Canvas stuff
     canvas = $("#canvas")[0];
     ctx = canvas.getContext("2d");
     w = $("#canvas").width();
     h = $("#canvas").height();
+    ctx.font = ("30px Arial");
+    ctx.fillText("Waiting for all users to be ready...", cw, cw);
 
     // draw (Waiting for other player) on canvas
     var pack = {
@@ -65,120 +72,83 @@ $(document).ready(function(){
 
   });
 
-
-  $("#groupItems").on("click", ".groupItem", function(){
-
-    var itemID = $(this).attr('itemID');
-    var item = mission.items[itemID];
-    var pack = {
-        'user': user,
-        'mission': mission,
-        'item': item,
-        'add': false
-    };
-    socket.emit('change item', pack);
-  })
-
   $("#yourItems").on("click", ".yourItem", function(){
     var itemID = $(this).attr('itemID');
     var item = user.items[itemID];
     console.log(itemID);
     console.log(item);
 
-    if(missionActive == false)
-    {
-      var pack = {
-          'user': user,
-          'mission': mission,
-          'item': item,
-          'add': true
-      };
-      socket.emit('change item', pack);
-    }
-    else { //click on the buttons to use the items :)
-      switch(item.key){
-        case 'P': //teleporter af
-          for(var x = -1; x < 2; x=x+2){
-            //check if theres a valid left/right movement
-            if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
-              if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].color === 'black') {
-                if(game_board.board[players[user.i].pos[0] + x + x][players[user.i].pos[1]].walk === true) {
-                  players[user.i].pos[0]+=(x+x);
-                  break;
-                }
+    switch(item.key){
+      case 'P': //teleporter af
+        for(var x = -1; x < 2; x=x+2){
+          //check if theres a valid left/right movement
+          if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
+            if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].color === 'black') {
+              if(game_board.board[players[user.i].pos[0] + x + x][players[user.i].pos[1]].walk === true) {
+                players[user.i].pos[0]+=(x+x);
+                break;
               }
             }
-            //check if there's a valid up/down movement
-            if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
-              if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].color === 'black') {
-                if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x + x].walk === true) {
-                  players[user.i].pos[1] += (x + x);
-                  break;
-                }
+          }
+          //check if there's a valid up/down movement
+          if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
+            if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].color === 'black') {
+              if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x + x].walk === true) {
+                players[user.i].pos[1] += (x + x);
+                break;
               }
             }
+          }
 
-          }
-          break;
-        case 'G':
-          //code
-          break;
-        case 'Y': //stun gunner
-          console.log("stun gun action!");
-          var update_board = false;
-          var pack = new Object();
-          for(var x = -2; x < 3; x++){
-            //check if new value is valid
-            if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
-              console.log("checking left/right: " + game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type);
-              if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type == 'R') {
-                update_board = true;
-                pack.userIndex = user.i;
-                pack.pos = [players[user.i].pos[0] + x, players[user.i].pos[1]];
-                pack.color = 'LightGrey';
-                pack.type = ' ';
-                pack.walk = true;
-                break;
-              }
+        }
+        break;
+      case 'G':
+        //code
+        break;
+      case 'Y': //stun gunner
+        console.log("stun gun action!");
+        var update_board = false;
+        var pack = new Object();
+        for(var x = -2; x < 3; x++){
+          //check if new value is valid
+          if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
+            console.log("checking left/right: " + game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type);
+            if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type == 'R') {
+              update_board = true;
+              pack.userIndex = user.i;
+              pack.pos = [players[user.i].pos[0] + x, players[user.i].pos[1]];
+              pack.color = 'LightGrey';
+              pack.type = ' ';
+              pack.walk = true;
+              break;
             }
-            if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
-              console.log("checking above/below: " + game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].type);
-              if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]+x].type == 'R') {
-                update_board = true;
-                pack.userIndex = user.i;
-                pack.pos = [players[user.i].pos[0], players[user.i].pos[1]+x];
-                pack.color = 'LightGrey';
-                pack.type = ' ';
-                pack.walk = true;
-                break;
-              }
+          }
+          if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
+            console.log("checking above/below: " + game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].type);
+            if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]+x].type == 'R') {
+              update_board = true;
+              pack.userIndex = user.i;
+              pack.pos = [players[user.i].pos[0], players[user.i].pos[1]+x];
+              pack.color = 'LightGrey';
+              pack.type = ' ';
+              pack.walk = true;
+              break;
             }
-            
           }
-          if(update_board == true){
-            socket.emit('update board', pack);
-          }
-          break;
-        case 'B':
-          //cpde
-          break;
-        default:
-          //code
-          break;
-      }
+          
+        }
+        if(update_board == true){
+          socket.emit('update board', pack);
+        }
+        break;
+      case 'B':
+        //cpde
+        break;
+      default:
+        //code
+        break;
     }
   });
-
-  
-  //Lets save the cell width in a variable for easy control
-  var cw = 50;
-  var d = null; //keyboard input movement variable
-  var score;
-
-  var game_board = new Object();
-
-  var players = [];
-  
   
   function init()
   {
@@ -426,7 +396,7 @@ $(document).ready(function(){
       curr_cell.color = 'LightGrey';
     }
     else if(curr_cell.type == '*'){
-      if(game_board.keysCollected == game_board.numKeys){
+      if(game_board.keysCollected == game_board.numKeys && p2_on_goal){
         clearInterval(game_loop);
         $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
         console.log("YOU DID IT")
@@ -499,36 +469,16 @@ $(document).ready(function(){
       }
       else if(curr_cell.type == '*'){
         if(game_board.keysCollected == game_board.numKeys){
-          clearInterval(game_loop);
-          $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
-          console.log("YOU DID IT")
+          p2_on_goal = true;
+          if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]].type == '*') {
+            clearInterval(game_loop);
+            $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
+          }
         }
       }
+      else
+        p2_on_goal = false;
     }
-  });
-
-
-
-  socket.on('update items', function(pack){
-    mission.items = pack.mission.items;
-    if(user.user === pack.user.user) //if the update came from the user, update him
-      user.items = pack.user.items;
-
-    $("#yourItems").html("<h2> Your Items: </h2>");
-    for(var i=0; i< user.items.length; i++){
-      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + user.items[i].name + '</button></div>');
-    }
-    $("#yourItems").append("<hr>");
-
-    if(missionActive == false)
-    {
-      $("#groupItems").html("<h2> Items to Trade: </h2>");
-        for(var i=0; i< mission.items.length; i++){
-          $("#groupItems").append('<hr><div class="row groupItem" itemID="'+i+'"><img src="'+mission.items[i].img+'" class="col-xs-4"><button class="col-xs-6" type="button">' + mission.items[i].name + '</button></div>');
-        }
-        $("#groupItems").append("<hr>");
-      }
-
   });
 
 })
@@ -549,8 +499,6 @@ $(document).ready(function(){
 <div id="activePage">
   <button type="button" id="startmission"> Start Mission </button>
   <div id="activeUsers" class="container">
-  </div>
-  <div id="groupItems" class="container">
   </div>
 
 </div>

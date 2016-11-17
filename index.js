@@ -214,45 +214,6 @@ io.on('connection', function(socket){
 		io.emit('update users', missions[i]);
 	});
 
-	socket.on('change item', function(pack){
-		for(var i = 0; i < users.length; i++){
-			if(users[i].user === pack.user.user){
-				break;
-			}
-		}
-		for(var j = 0; j < missions.length; j++){
-			if(missions[j].name === pack.mission.name){
-				break;
-			}
-		}
-		if(pack.add){ //add item from mission items, remove from user items
-			console.log("add ", pack.item.name);
-			missions[j].items.push(pack.item);//add to mission items
-			for(var k = 0; k < users[i].items.length; k++){
-				if(pack.item.name === users[i].items[k].name){
-					break;
-				}
-			}
-			users[i].items.splice(k, 1);//remove from user items
-
-		}
-		else{ //remove from mission items, add to user items
-			console.log("remove ", pack.item.name);
-			for(var k = 0; k < missions[j].items.length; k++){
-				if(pack.item.name === missions[j].items[k].name){
-					break;
-				}
-			}
-			missions[j].items.splice(k, 1); // remove from mission item
-			users[i].items.push(pack.item); // add to user items
-		}
-		var pack = {
-			user: users[i],
-			mission: missions[j]
-		};
-		io.emit('update items', pack);
-	});
-
 	socket.on('user ready', function(pack){
 		for(var j = 0; j < missions.length; j++){
 			console.log(j);
