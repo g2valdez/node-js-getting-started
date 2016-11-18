@@ -147,6 +147,34 @@ app.get('/mission/:missionName', function(request, response) {
 
 });
 
+app.get('/mission2/:missionName', function(request, response) {
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		var mission;
+		for(var i = 0; i < missions.length; i++){
+			if(request.params.missionName === missions[i].name){
+				break;
+			}
+		}
+		missions[i].users.push(cookie.user); // push to missions array
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+
+		}
+		response.render('pages/mission2', {
+			mission:missions[i],
+			user: users[j]
+		});
+	}
+
+});
+
 app.get('/leaderboards', function(request, response) {
   response.render('pages/leaderboards');
 });
