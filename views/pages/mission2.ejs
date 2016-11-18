@@ -155,7 +155,7 @@ $(document).ready(function(){
     create_players();
     create_board(); //Now we can see the food particle
     //finally lets display the score
-    score = 1000;
+    score = 500;
     
     //Lets move the snake now using a timer which will trigger the paint function
     //every 60ms
@@ -402,7 +402,12 @@ $(document).ready(function(){
       if(game_board.keysCollected == game_board.numKeys && p2_on_goal){
         clearInterval(game_loop);
         $("#activePage").html('<h3> YOU WIN! Final Score: ' + score + '</h3>');
-        console.log("YOU DID IT")
+        var pack = {
+          user: user,
+          mission: mission,
+          score: score
+        }
+        socket.emit('game over', pack);
       }
 
     }
@@ -477,6 +482,12 @@ $(document).ready(function(){
           if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]].type == '*') {
             clearInterval(game_loop);
             $("#activePage").html('<h3> YOU WIN! Final Score: ' + score+'</h3>');
+            var pack = {
+              user: user,
+              mission: mission,
+              score: score
+            }
+            socket.emit('game over', pack);
           }
         }
       }
