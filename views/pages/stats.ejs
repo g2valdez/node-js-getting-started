@@ -8,6 +8,21 @@
 
   <% include ../partials/nav.ejs %>
 
+  <script>
+  var user = <%-JSON.stringify(user)%>;
+
+  $(document).ready(function(){
+      $("mission_history").html("");
+      for(var i=0; i< user.mission_history.length; i++){
+        $("#mission_history").append('<hr><h2>' + user.mission_history[i] + '</h2>');
+      }
+      $("#mission_history").append("<hr>");
+
+      $("#num_games").html("<h3>" + user.mission_history.length + "</h3>");
+      $("#score").html("<h3>" + user.score + "</h3>");
+  })
+  </script>
+
   <div class="jumbotron text-center">
     <div class="container">
       <h1>Stats Screen</h1>
@@ -20,11 +35,11 @@
   			<h2 class="col-xs-6 text-center">Score</h2>
   		</div>
 
-      <div class="col-xs-6 text-center">
-        <h3>0</h3>
+      <div class="col-xs-6 text-center" id="num_games">
+        
       </div>
-      <div class="col-xs-6 text-center">
-        <h3>0</h3>
+      <div class="col-xs-6 text-center" id="score">
+        
       </div>
   </div>
 
@@ -32,8 +47,8 @@
     <div class="row" style="background-color:blue;">
       <h2 class="col-xs-14 text-center">MISSION HISTORY</h2>
     </div>
-    <div class="text-center">
-        <h2>The Geisel Labyrinth</h2>
+    <div class="text-center" id="mission_history">
+        
     </div>
 </div>
 

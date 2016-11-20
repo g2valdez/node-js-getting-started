@@ -94,9 +94,12 @@ app.get('/stats', function(request, response) {
 		response.render('pages/login');
 	}
 	else {
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user)
+				break;
+		}
 		response.render('pages/stats', {
-			user_name: cookie.name,
-			user_img: cookie.img
+			user: users[j]
 		});
 	}
 });
@@ -140,6 +143,34 @@ app.get('/mission/:missionName', function(request, response) {
 
 		}
 		response.render('pages/mission', {
+			mission:missions[i],
+			user: users[j]
+		});
+	}
+
+});
+
+app.get('/mission2/:missionName', function(request, response) {
+	var cookie = request.cookies.user;
+	if(cookie === undefined){
+		console.log("error no cookie");
+		response.render('pages/login');
+	}
+	else {
+		var mission;
+		for(var i = 0; i < missions.length; i++){
+			if(request.params.missionName === missions[i].name){
+				break;
+			}
+		}
+		missions[i].users.push(cookie.user); // push to missions array
+		for(var j = 0; j < users.length; j++){
+			if(cookie.user === users[j].user){
+				break;
+			}
+
+		}
+		response.render('pages/mission2', {
 			mission:missions[i],
 			user: users[j]
 		});
@@ -238,26 +269,41 @@ io.on('connection', function(socket){
 
 	socket.on('disconnect', function(){
 		console.log('a user disconnected');
-		// finds the right client (object with socket, user, mission)
-		for(var i = 0; i < allClients.length; i++){
-			if(socket === allClients[i].socket){
+		if(allClients.length != 0){
+			// finds the right client (object with socket, user, mission)
+			for(var i = 0; i < allClients.length; i++){
+				if(socket === allClients[i].socket){
+					break;
+				}
+			}
+			//finds the right mission in the missions array
+			for(var j = 0; j < missions.length; j++){
+				if(missions[j].name === allClients[i].mission.name){
+					break;
+				}
+			}
+			//finds the right user index
+			for(var k = 0; k < missions[j].users.length; k++){
+				if(allClients[i].user.user === missions[j].users[k]){
+					break;
+				}
+			}
+			missions[j].users.splice(k, 1); // remove the user from the missions user array
+			io.emit('update users', missions[j]);
+			read_map_files();
+		}
+	});
+
+	socket.on('game over', function(pack) {
+		// finds the right user, updates score and mission history
+		for(var i = 0; i < users.length; i++){
+			if(pack.user.user === users[i].user){
+				console.log(users[i].user);
+				users[i].score+=pack.score;
+				users[i].mission_history.push(pack.mission.name);
 				break;
 			}
 		}
-		//finds the right mission in the missions array
-		for(var j = 0; j < missions.length; j++){
-			if(missions[j].name === allClients[i].mission.name){
-				break;
-			}
-		}
-		//finds the right user index
-		for(var k = 0; k < missions[j].users.length; k++){
-			if(allClients[i].user.user === missions[j].users[k]){
-				break;
-			}
-		}
-		missions[j].users.splice(k, 1); // remove the user from the missions user array
-		io.emit('update users', missions[j]);
 	});
 
 });
