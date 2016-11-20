@@ -109,7 +109,7 @@ $(document).ready(function(){
         console.log("stun gun action!");
         var update_board = false;
         var pack = new Object();
-        for(var x = -2; x < 3; x++){
+        for(var x = -1; x < 2; x++){
           //check if new value is valid
           if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
             console.log("checking left/right: " + game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type);
@@ -155,7 +155,7 @@ $(document).ready(function(){
     create_players();
     create_board(); //Now we can see the food particle
     //finally lets display the score
-    score = 0;
+    score = 1000;
     
     //Lets move the snake now using a timer which will trigger the paint function
     //every 60ms
@@ -327,21 +327,15 @@ $(document).ready(function(){
     ctx.strokeRect(0, 0, w, h);
   }
 
-  //Lets add the keyboard controls now
-  $(document).keydown(function(e){
-    e.preventDefault();
-    var should_update = false;
-    var key = e.which;
-    //We will add another clause to prevent reverse gear
-    if(key == "37") d = "left";
-    else if(key == "38") d = "up";
-    else if(key == "39") d = "right";
-    else if(key == "40") d = "down";
+  $("#arrows").on("click", ".arr", function(){
+    var d = $(this).attr('id');
+    console.log(d);
 
     //Lets add proper direction based movement now
     if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid.length){
       var val = game_board.board[players[user.i].pos[0] + 1][players[user.i].pos[1]];
       if(val.walk == true) {
+        score--;
         should_update = true;
         players[user.i].pos[0]++;
       }
@@ -356,6 +350,7 @@ $(document).ready(function(){
     else if(d == "up" && players[user.i].pos[1] - 1 >= 0) {
       var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] - 1];
       if(val.walk == true) {
+        score--;
         should_update = true;
         players[user.i].pos[1]--;
       }
@@ -363,6 +358,7 @@ $(document).ready(function(){
     else if(d == "down" && players[user.i].pos[1] + 1 < game_board.grid[0].length) {
       var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + 1];
       if(val.walk == true) {
+        score--;
         should_update = true;
         players[user.i].pos[1]++;
       }
@@ -398,7 +394,97 @@ $(document).ready(function(){
     else if(curr_cell.type == '*'){
       if(game_board.keysCollected == game_board.numKeys && p2_on_goal){
         clearInterval(game_loop);
-        $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
+        $("#activePage").html('<h3> YOU WIN! Final Score: ' + score + '</h3>');
+        console.log("YOU DID IT")
+      }
+
+    }
+    if(should_update == true) {
+      var pack = {
+        items: user.item_keys,
+        userIndex: user.i,
+        pos: players[user.i].pos,
+        mission: mission
+      }
+      socket.emit('user movement', pack);
+    }
+  })
+
+  //Lets add the keyboard controls now
+  $(document).keydown(function(e){
+    e.preventDefault();
+    var should_update = false;
+    var key = e.which;
+    //We will add another clause to prevent reverse gear
+    if(key == "37") d = "left";
+    else if(key == "38") d = "up";
+    else if(key == "39") d = "right";
+    else if(key == "40") d = "down";
+
+    //Lets add proper direction based movement now
+    if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid.length){
+      var val = game_board.board[players[user.i].pos[0] + 1][players[user.i].pos[1]];
+      if(val.walk == true) {
+        score--;
+        should_update = true;
+        players[user.i].pos[0]++;
+      }
+    }
+    else if(d == "left" && players[user.i].pos[0] - 1 >= 0) {
+      var val = game_board.board[players[user.i].pos[0] - 1][players[user.i].pos[1]];
+      if(val.walk == true) {
+        should_update = true;
+        players[user.i].pos[0]--;
+      }
+    }
+    else if(d == "up" && players[user.i].pos[1] - 1 >= 0) {
+      var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] - 1];
+      if(val.walk == true) {
+        score--;
+        should_update = true;
+        players[user.i].pos[1]--;
+      }
+    }
+    else if(d == "down" && players[user.i].pos[1] + 1 < game_board.grid[0].length) {
+      var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + 1];
+      if(val.walk == true) {
+        score--;
+        should_update = true;
+        players[user.i].pos[1]++;
+      }
+    }
+
+    if(hacking !== null) {
+      for(var i = 0; i < hacking.child.length; i++){
+        hacking.child[i].walk = false;
+        hacking.child[i].color = 'black';
+      }
+      hacking = null;
+    }
+
+    //check if we hit a key or the goal state
+    var curr_cell = game_board.board[players[user.i].pos[0]][players[user.i].pos[1]];
+    if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+      for(var q = 0; q < user.item_keys.length; q++){
+        if(user.item_keys[q] == 1){
+          hacking = curr_cell;
+          for(var i = 0; i < curr_cell.child.length; i++){
+            curr_cell.child[i].walk = true;
+            curr_cell.child[i].color = 'LightGrey';
+          }
+          break;
+        }
+      }
+    }
+    else if(curr_cell.type == 'K') {
+      game_board.keysCollected++;
+      curr_cell.type = ' ';
+      curr_cell.color = 'LightGrey';
+    }
+    else if(curr_cell.type == '*'){
+      if(game_board.keysCollected == game_board.numKeys && p2_on_goal){
+        clearInterval(game_loop);
+        $("#activePage").html('<h3> YOU WIN! Final Score: ' + score + '</h3>');
         console.log("YOU DID IT")
       }
 
@@ -436,6 +522,7 @@ $(document).ready(function(){
   socket.on('user move', function(pack){
     if(pack.userIndex !== user.i)
     {
+      score--;
 
       players[pack.userIndex].pos = pack.pos;
 
@@ -467,12 +554,12 @@ $(document).ready(function(){
         curr_cell.type = ' ';
         curr_cell.color = 'LightGrey';
       }
-      else if(curr_cell.type == '*'){
+      else if(curr_cell.type == '*') {
         if(game_board.keysCollected == game_board.numKeys){
           p2_on_goal = true;
           if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]].type == '*') {
             clearInterval(game_loop);
-            $("#activePage").html('<h3> YOU WIN! Final Score: 500 </h3>');
+            $("#activePage").html('<h3> YOU WIN! Final Score: ' + score+'</h3>');
           }
         }
       }
@@ -494,16 +581,34 @@ $(document).ready(function(){
   </div>
 </div>
 
-
-
 <div id="activePage">
   <button type="button" id="startmission"> Start Mission </button>
   <div id="activeUsers" class="container">
   </div>
 
 </div>
-<div id="yourItems" class="container">
-</div>
+<div class="row pull-left">
+  <div id="yourItems" class="container col-xs-6">
+  </div>
+  <div class="col-xs-6" id="arrows">
+    <button id="up" class="btn center-block arr">
+      &uarr;
+    </button>
+    <div id="left" class="col-xs-6 center-block arr">
+      <button class="btn pull-right">
+            &larr;
+      </button>
+    </div>
 
+    <div id="right" class="col-xs-6 center-block arr">
+      <button class="btn">
+            &rarr;
+      </button>
+    </div>
+    <button id="down" class="btn center-block arr">
+      &darr;
+    </button>
+  </div>
+</div>
 </body>
 </html>
