@@ -75,3 +75,8 @@ canvas {
     margin: auto;
     display: block;
 }
+
+.fl{
+  float: left;
+  margin: 0;
+}
