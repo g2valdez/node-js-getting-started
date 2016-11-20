@@ -1,7 +1,9 @@
 .jumbotron {
   background: #339FFF;
   color: black;
-  padding-bottom: 20px; }
+  padding-bottom: 10px;
+  padding-top: 10px;
+  height: 110px; }
 .jumbotron .btn-primary {
     background: #845ac7;
     border-color: #845ac7; }
@@ -74,6 +76,10 @@ canvas {
     padding: 0;
     margin: auto;
     display: block;
+}
+
+a {
+  font-size: 30px;
 }
 
 .fl{

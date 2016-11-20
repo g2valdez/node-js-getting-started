@@ -54,6 +54,7 @@ $(document).ready(function(){
   $("#startmission").click(function(){
     var leng = mission.board.length;
     $("#activePage").html('<canvas id="canvas" width="'+(leng * cw)+'" height="'+(leng * cw)+'"></canvas>');
+    $("#choose").html("<h2><%=mission.name%></h2>");
     missionActive = true;
     //Canvas stuff
     canvas = $("#canvas")[0];
@@ -576,8 +577,9 @@ $(document).ready(function(){
   <% include ../partials/nav.ejs %>
 
 <div class="jumbotron text-center">
-  <div class="container">
-    <h1><%=mission.name%></h1>
+  <div id="choose" class="container">
+    <h1>Choose a Class:</h1>
+    <h3><%=mission.name%></h3>
   </div>
 </div>
 
