@@ -315,8 +315,10 @@ function read_map_files() {
 		var data = fs.readFileSync("maps/"+missions[i].mapfile).toString();
 		if (data != null)
 			missions[i].board = data.toString().split('|');
+		console.log(missions[i].board);
+		console.log("length: "+missions[i].board.length+", width: "+missions[i].board[0].length);
+
 	}
-	console.log(missions[0].board);
 }
 
 function load_user_items() {
