@@ -135,7 +135,7 @@ app.get('/mission/:missionName', function(request, response) {
 				break;
 			}
 		}
-		missions[i].users.push(cookie.user); // push to missions array
+		missions[i].users.push(cookie); // push to missions array
 		for(var j = 0; j < users.length; j++){
 			if(cookie.user === users[j].user){
 				break;
@@ -284,7 +284,7 @@ io.on('connection', function(socket){
 			}
 			//finds the right user index
 			for(var k = 0; k < missions[j].users.length; k++){
-				if(allClients[i].user.user === missions[j].users[k]){
+				if(allClients[i].user.user === missions[j].users[k].user){
 					break;
 				}
 			}

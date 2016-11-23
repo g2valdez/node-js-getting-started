@@ -409,8 +409,8 @@ $(document).ready(function(){
         }
         socket.emit('game over', pack);
       }
-
     }
+    
     if(should_update == true) {
       var pack = {
         items: user.item_keys,
@@ -510,13 +510,33 @@ $(document).ready(function(){
 </div>
 
 <div id="activePage">
-  <button type="button" id="startmission"> Start Mission </button>
+  <button type="button" class="btn" id="startmission"> Start Mission </button>
   <div id="activeUsers" class="container">
   </div>
 
 </div>
-<div id="yourItems" class="container">
-</div>
+<div class="row fl">
+  <div id="yourItems" class="container col-xs-6">
+  </div>
+  <div class="col-xs-6" id="arrows">
+    <button id="up" class="row btn center-block arr">
+      &uarr;
+    </button>
+    <div id="left" class="col-xs-6 center-block arr">
+      <button class="btn pull-right">
+        &larr;
+      </button>
+    </div>
 
+    <div id="right" class="col-xs-6 center-block arr">
+      <button class="btn">
+        &rarr;
+      </button>
+    </div>
+    <button id="down" class="row btn center-block arr">
+      &darr;
+    </button>
+  </div>
+</div>
 </body>
 </html>

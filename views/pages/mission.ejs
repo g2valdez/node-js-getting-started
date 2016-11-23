@@ -30,13 +30,14 @@
       mission.users = missionU.users; //sets local mission users variable
       $("#activeUsers").html("<h2> Active users on this Mission: </h2>");
       for(var i=0; i< mission.users.length; i++){
-        $("#activeUsers").append("<hr><h3>"+mission.users[i]+"</h3>");
+        $("#activeUsers").append("<hr><h3>"+mission.users[i].user+"</h3>");
       }
       $("#activeUsers").append("<hr>");
     }
   });
 
 $(document).ready(function(){
+  $(".fl").hide();
   var canvas, ctx, w, h;
   var hacking = null; //checks if we're currently hacking a space
   var hacking_tm = null; //checks if teammate is currently hacking a spot
@@ -52,9 +53,10 @@ $(document).ready(function(){
   var players = [];
 
   $("#startmission").click(function(){
+    $(".fl").show();
     var leng = mission.board.length;
     $("#activePage").html('<canvas id="canvas" width="'+(leng * cw)+'" height="'+(leng * cw)+'"></canvas>');
-    $("#choose").html("<h2><%=mission.name%></h2>");
+    $("#choose").html("<h1><%=mission.name%></h1>");
     missionActive = true;
     //Canvas stuff
     canvas = $("#canvas")[0];
@@ -76,8 +78,6 @@ $(document).ready(function(){
   $("#yourItems").on("click", ".yourItem", function(){
     var itemID = $(this).attr('itemID');
     var item = user.items[itemID];
-    console.log(itemID);
-    console.log(item);
 
     switch(item.key){
       case 'P': //teleporter af
@@ -107,13 +107,11 @@ $(document).ready(function(){
         //code
         break;
       case 'Y': //stun gunner
-        console.log("stun gun action!");
         var update_board = false;
         var pack = new Object();
         for(var x = -1; x < 2; x++){
           //check if new value is valid
           if(players[user.i].pos[0] + x >= 0 && players[user.i].pos[0] + x < game_board.board.length) {
-            console.log("checking left/right: " + game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type);
             if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].type == 'R') {
               update_board = true;
               pack.userIndex = user.i;
@@ -125,7 +123,6 @@ $(document).ready(function(){
             }
           }
           if(players[user.i].pos[1] + x >= 0 && players[user.i].pos[1] + x < game_board.board.length) {
-            console.log("checking above/below: " + game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].type);
             if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]+x].type == 'R') {
               update_board = true;
               pack.userIndex = user.i;
@@ -161,7 +158,7 @@ $(document).ready(function(){
     //Lets move the snake now using a timer which will trigger the paint function
     //every 60ms
     if(typeof game_loop != "undefined") clearInterval(game_loop);
-    game_loop = setInterval(paint, 60);
+    game_loop = setInterval(paint, 10);
 
   }
   
@@ -170,9 +167,12 @@ $(document).ready(function(){
     for(var i = 0; i < mission.users.length; i++)
     {
       var player = new Object();
-      player.name = mission.users[i];
+      player.name = mission.users[i].user;
+      player.item_keys = mission.users[i].item_keys;
       players.push(player)
     }
+
+
   }
   
   //Lets create the board now
@@ -197,6 +197,7 @@ $(document).ready(function(){
       {
         var cell = new Object();
         cell.type = currentCol[j];
+        cell.see_through = true;
         switch(currentCol[j]) {
           case ' ':
             cell.color = "LightGrey";
@@ -204,13 +205,8 @@ $(document).ready(function(){
             break;
           case 'O':
             cell.color = "black";
-            cell.destructable = false;
             cell.walk = false;
-            break;
-          case 'o':
-            cell.color = "#303030";
-            cell.destructable = true;
-            cell.walk = false;
+            cell.see_through = false;
             break;
           case 'R':
             cell.color = "red"
@@ -235,11 +231,13 @@ $(document).ready(function(){
             cell.color = "black"
             hc.push(cell);
             cell.walk = false;
+            cell.see_through = false;
             break;
           case 'j':
             cell.color = "black"
             jc.push(cell);
             cell.walk = false;
+            cell.see_through = false;
             break;
           case '1':
             players[0].pos = [j,i];
@@ -262,6 +260,7 @@ $(document).ready(function(){
             cell.color = "black"
             cell.walk = false;
             tc.push(cell);
+            cell.see_through = false;
             break;
           case 'P':
             cell.color = "pink"
@@ -285,25 +284,89 @@ $(document).ready(function(){
   //Lets paint the board now
   function paint()
   {
+    //clear the board first
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, w, h);
 
-   
+    //loop through all vars and check proximity to players
     for(var i = 0; i < game_board.board.length; i++)
     {
       var currentRow = game_board.board[i];
       for(var j = 0; j < currentRow.length; j++)
       {
 
-        //Lets paint 10px wide cells
+        //check the rect's proximity to each player
         for(var k = 0; k < players.length; k++){
-          if(Math.abs(players[k].pos[0] - i) <= 2 && Math.abs(players[k].pos[1] - j) <= 2){
-              paint_cell(i,j, game_board.board[i][j].color);
-              
-            break;
+          var x_dist = (i - players[k].pos[0]);
+          var y_dist = (j - players[k].pos[1]);
+          if(Math.abs(x_dist) <= 3 && Math.abs(y_dist) <= 3){
+            var has_item = false;
+            // if the player that the block is near, check if the player has the x-ray goggles
+            for(var q = 0; q < players[k].item_keys.length; q++) {
+              //if he has them, paint the block
+              if(players[k].item_keys[q] == 2) {
+                paint_cell(i,j, game_board.board[i][j].color);
+                has_item = true;
+                break;
+              }
+            }
 
+            // if the user doesn't have the item, check if his vision is obstructed
+            if(has_item == false){
+
+              //LOS=1 is always true
+              if(Math.abs(x_dist) <=1 && Math.abs(y_dist) <= 1) {
+                paint_cell(i,j, game_board.board[i][j].color);
+                break;                
+              }
+              else {
+
+                var deltax = x_dist / Math.abs(x_dist); //yields +-1, depending
+                var deltay = y_dist / Math.abs(y_dist);
+
+                var tempx = i;
+                var tempy = j;
+
+                while(true){
+                  if(tempx == players[k].pos[0] && tempy == players[k].pos[1]){
+                    paint_cell(i,j, game_board.board[i][j].color);
+                    break;
+                  }
+                  //if we're off in both x and y axes, decrement both
+                  if(tempx != players[k].pos[0] && tempy != players[k].pos[1]) {
+                    if(game_board.board[tempx - (deltax)][tempy - (deltay)].see_through == true){
+                      tempx -= deltax;
+                      tempy -= deltay;
+                    }
+                    else
+                      break;
+                  }
+                  //if one temp is zero, run this block
+                  else {
+                    if(tempx == players[k].pos[0]){
+                      if(game_board.board[tempx][tempy - (deltay)].see_through == true){
+                        tempy -= deltay;
+                      }
+                      else break; 
+                    }
+                    else {
+                      if(game_board.board[tempx - (deltax)][tempy].see_through == true){
+                        tempx -= deltax;
+                      }
+                      else
+                        break;
+                    }
+                  }
+                }
+
+// end while //
+
+              }
+            }
           }
-          else
-            paint_cell(i,j,"white");
         }
+
+        
       }
     }
 
@@ -421,6 +484,7 @@ $(document).ready(function(){
     else if(key == "38") d = "up";
     else if(key == "39") d = "right";
     else if(key == "40") d = "down";
+    else d = "bad";
 
     //Lets add proper direction based movement now
     if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid.length){
@@ -486,10 +550,15 @@ $(document).ready(function(){
       if(game_board.keysCollected == game_board.numKeys && p2_on_goal){
         clearInterval(game_loop);
         $("#activePage").html('<h3> YOU WIN! Final Score: ' + score + '</h3>');
-        console.log("YOU DID IT")
+        var pack = {
+          user: user,
+          mission: mission,
+          score: score
+        }
+        socket.emit('game over', pack);
       }
-
     }
+
     if(should_update == true) {
       var pack = {
         items: user.item_keys,
@@ -503,7 +572,7 @@ $(document).ready(function(){
 
   socket.on('begin game', function(usersReady){
     for(var i = 0; i < mission.users.length; i++){
-      if(mission.users[i] === user.user){
+      if(mission.users[i].user === user.user){
         user.i = i;
       }
     }
@@ -561,6 +630,12 @@ $(document).ready(function(){
           if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1]].type == '*') {
             clearInterval(game_loop);
             $("#activePage").html('<h3> YOU WIN! Final Score: ' + score+'</h3>');
+            var pack = {
+              user: user,
+              mission: mission,
+              score: score
+            }
+            socket.emit('game over', pack);
           }
         }
       }
@@ -584,8 +659,15 @@ $(document).ready(function(){
 </div>
 
 <div id="activePage">
-  <button type="button" id="startmission"> Start Mission </button>
-  <div id="activeUsers" class="container">
+  <div class="col-xs-6 text-center">
+    <h2> Hacker </h2>
+  </div>
+  <div class="col-xs-6 text-center">
+    <h2> Spy </h2>
+  </div>
+
+  <button type="button" class="center-block btn" id="startmission"> Start Mission </button>
+  <div id="activeUsers" class="container center-block">
   </div>
 
 </div>
@@ -598,13 +680,13 @@ $(document).ready(function(){
     </button>
     <div id="left" class="col-xs-6 center-block arr">
       <button class="btn pull-right">
-            &larr;
+        &larr;
       </button>
     </div>
 
     <div id="right" class="col-xs-6 center-block arr">
       <button class="btn">
-            &rarr;
+        &rarr;
       </button>
     </div>
     <button id="down" class="row btn center-block arr">
