@@ -44,7 +44,7 @@ $(document).ready(function(){
   var p2_on_goal = false;
 
   //Lets save the cell width in a variable for easy control
-  var cw = 50;
+  var cw;
   var d = null; //keyboard input movement variable
   var score;
 
@@ -55,7 +55,9 @@ $(document).ready(function(){
   $("#startmission").click(function(){
     $(".fl").show();
     var leng = mission.board.length;
-    $("#activePage").html('<canvas id="canvas" width="'+(leng * cw)+'" height="'+(leng * cw)+'"></canvas>');
+    var wid = mission.board[0].length;
+    cw = 800 / wid;
+    $("#activePage").html('<canvas id="canvas" width="'+(wid * cw)+'" height="'+(leng * cw)+'"></canvas>');
     $("#choose").html("<h1><%=mission.name%></h1>");
     missionActive = true;
     //Canvas stuff
@@ -178,15 +180,20 @@ $(document).ready(function(){
   //Lets create the board now
   function create_board()
   {
-    var hp, jp, tp;
+    var hp, jp, tp, ip, np, mp, gp;
     var hc = [];
     var jc = [];
     var tc = [];
+    var ic = [];
+    var nc = [];
+    var mc = [];
+    var gc = [];
+
     game_board.grid = mission.board;
     game_board.numKeys = 0;
     game_board.keysCollected = 0;
     game_board.board = new Array(game_board.grid.length);
-    for(var i = 0; i < game_board.grid.length; i++)
+    for(var i = 0; i < game_board.grid[0].length; i++)
     {
       game_board.board[i] = new Array(game_board.grid.length);
     }
@@ -199,74 +206,122 @@ $(document).ready(function(){
         cell.type = currentCol[j];
         cell.see_through = true;
         switch(currentCol[j]) {
-          case ' ':
+          case ' ': // walkable spaces
             cell.color = "LightGrey";
             cell.walk = true;
             break;
-          case 'O':
+          case 'O': //walls
             cell.color = "black";
             cell.walk = false;
             cell.see_through = false;
             break;
-          case 'R':
+          case 'R': //guards
             cell.color = "red"
             cell.walk = false;
             break;
-          case 'H':
+
+
+          case 'H': //hack parent
             cell.color = "green"
             hp = cell;
             cell.walk = true;
             break;
-          case 'J':
+          case 'J': //hack parent
             cell.color = "green"
             jp = cell;
             cell.walk = true;
             break;
-          case 'K':
+          case 'I': //hack parent
+            cell.color = "green"
+            ip = cell;
+            cell.walk = true;
+            break;
+          case 'N': //hack parent
+            cell.color = "green"
+            np = cell;
+            cell.walk = true;
+            break;
+          case 'T': // hack parent
+            cell.color = "green"
+            cell.walk = true;
+            tp = cell;
+            break;
+          case 'M': // hack parent
+            cell.color = "green"
+            cell.walk = true;
+            mp = cell;
+            break;
+          case 'G': // hack parent
+            cell.color = "green"
+            cell.walk = true;
+            gp = cell;
+            break;
+
+
+          case 'K': //keys
             cell.color = "yellow"
             cell.walk = true;
             game_board.numKeys++;
             break;
-          case 'h':
+          case 'h': //hack child
             cell.color = "black"
             hc.push(cell);
             cell.walk = false;
             cell.see_through = false;
             break;
-          case 'j':
+          case 'j': //hack child
             cell.color = "black"
             jc.push(cell);
             cell.walk = false;
             cell.see_through = false;
             break;
-          case '1':
-            players[0].pos = [j,i];
-            cell.type = ' ';
-            cell.color = "LightGrey"
-            cell.walk = true;
+          case 'i': //hack child
+            cell.color = "black"
+            ic.push(cell);
+            cell.walk = false;
+            cell.see_through = false;
             break;
-          case '2':
-            players[1].pos = [j,i];
-            cell.type = ' ';
-            cell.color = "LightGrey"
-            cell.walk = true;
+          case 'n': //hack child
+            cell.color = "black"
+            nc.push(cell);
+            cell.walk = false;
+            cell.see_through = false;
             break;
-          case 'T':
-            cell.color = "green"
-            cell.walk = true;
-            tp = cell;
-            break;
-          case 't':
+          case 't': // hack child
             cell.color = "black"
             cell.walk = false;
             tc.push(cell);
             cell.see_through = false;
             break;
-          case 'P':
+          case 'm': //hack child
+            cell.color = "black"
+            mc.push(cell);
+            cell.walk = false;
+            cell.see_through = false;
+            break;
+          case 'g': // hack child
+            cell.color = "black"
+            cell.walk = false;
+            gc.push(cell);
+            cell.see_through = false;
+            break;
+          case '1': // player 1 start
+            players[0].pos = [j,i];
+            cell.type = ' ';
+            cell.color = "LightGrey"
+            cell.walk = true;
+            break;
+          case '2': //player 2 start
+            players[1].pos = [j,i];
+            cell.type = ' ';
+            cell.color = "LightGrey"
+            cell.walk = true;
+            break;
+          case 'P': // ??
             cell.color = "pink"
             cell.walk = true;
             break
-          case '*':
+          case '*': // goal state
             cell.color = "purple"
             cell.walk = true;
             break;
@@ -276,9 +331,20 @@ $(document).ready(function(){
         game_board.board[j][i] = cell;
       }
     }
-    hp.child = hc;
-    jp.child = jc;
-    tp.child = tc;
+    if(hp)
+      hp.child = hc;
+    if(jp)
+      jp.child = jc;
+    if(tp)
+      tp.child = tc;
+    if(ip)
+      ip.child = ic;
+    if(np)
+      np.child = nc;
+    if(mp)
+      mp.child = mc;
+    if(gp)
+      gp.child = gc;
   }
   
   //Lets paint the board now
@@ -393,7 +459,6 @@ $(document).ready(function(){
 
   $("#arrows").on("click", ".arr", function(){
     var d = $(this).attr('id');
-    console.log(d);
 
     //Lets add proper direction based movement now
     if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid.length){
@@ -438,7 +503,7 @@ $(document).ready(function(){
 
     //check if we hit a key or the goal state
     var curr_cell = game_board.board[players[user.i].pos[0]][players[user.i].pos[1]];
-    if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+    if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T' || curr_cell.type == 'N' || curr_cell.type == 'G' || curr_cell.type == 'M' || curr_cell.type == 'I'){
       for(var q = 0; q < user.item_keys.length; q++){
         if(user.item_keys[q] == 1){
           hacking = curr_cell;
@@ -487,8 +552,9 @@ $(document).ready(function(){
     else d = "bad";
 
     //Lets add proper direction based movement now
-    if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid.length){
+    if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid[0].length){
       var val = game_board.board[players[user.i].pos[0] + 1][players[user.i].pos[1]];
+      console.log("checking right: "+ val.type+": "+val.walk);
       if(val.walk == true) {
         score--;
         should_update = true;
@@ -510,8 +576,10 @@ $(document).ready(function(){
         players[user.i].pos[1]--;
       }
     }
-    else if(d == "down" && players[user.i].pos[1] + 1 < game_board.grid[0].length) {
+    else if(d == "down" && players[user.i].pos[1] + 1 < game_board.grid.length) {
+      
       var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + 1];
+      console.log("checking down: "+ val.type+": "+val.walk);
       if(val.walk == true) {
         score--;
         should_update = true;
@@ -529,7 +597,7 @@ $(document).ready(function(){
 
     //check if we hit a key or the goal state
     var curr_cell = game_board.board[players[user.i].pos[0]][players[user.i].pos[1]];
-    if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+    if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T' || curr_cell.type == 'N' || curr_cell.type == 'G' || curr_cell.type == 'M' || curr_cell.type == 'I'){
       for(var q = 0; q < user.item_keys.length; q++){
         if(user.item_keys[q] == 1){
           hacking = curr_cell;
@@ -661,9 +729,11 @@ $(document).ready(function(){
 <div id="activePage">
   <div class="col-xs-6 text-center">
     <h2> Hacker </h2>
+    <hr>
   </div>
   <div class="col-xs-6 text-center">
     <h2> Spy </h2>
+    <hr>
   </div>
 
   <button type="button" class="center-block btn" id="startmission"> Start Mission </button>
