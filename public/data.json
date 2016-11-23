@@ -1,7 +1,7 @@
 {"users": [{"user":"japple", "pass": "seed", "name": "Johnny Appleseed", "item_keys": [0, 1], "mission_history": [], "img": "http://popularpittsburgh.com/wp-content/uploads/2015/02/johnny-appleseed-article.jpg", "score":0},
 	{"user":"jhan", "pass": "cock", "name": "John Hancock", "item_keys": [3,2], "mission_history": [], "img": "https://www.wikitree.com/photo.php/7/7a/JohnHancockSmall.jpeg", "score":0}
 ],
-"missions": [{"name":"The Geisel Labrynth", "img":"https://upload.wikimedia.org/wikipedia/commons/a/aa/Geisel-Library.jpg", "users": [], "mapfile":"ptest.gameboard"},
+"missions": [{"name":"The Geisel Labyrinth", "img":"https://upload.wikimedia.org/wikipedia/commons/a/aa/Geisel-Library.jpg", "users": [], "mapfile":"ptest.gameboard"},
 	{"name":"Lasers and Books", "img":"https://upload.wikimedia.org/wikipedia/commons/c/c5/13-11-02-olb-by-RalfR-03.jpg", "users": [], "mapfile":"ptest.gameboard"},
 	{"name":"The Revelle Runaway", "img": "http://library.ucsd.edu/dc/object/bb0035302c/_3.jpg", "users": [], "mapfile":"ptest.gameboard"}
 ],
