@@ -111,12 +111,19 @@ app.get('/mission_browser', function(request, response) {
 		response.render('pages/login');
 	}
 	else {
-		response.render('pages/mission_browser', {
+		var chance = Math.random();
+		if (chance > .5) 
+			response.render('pages/mission_browser', {
+  			missions: missions
+	});
+		else 
+			response.render('pages/mission_browser2', {
   			missions: missions
   		});
 	}
 
 });
+
 
 app.get('/history', function(request, response) {
   response.render('pages/history');
@@ -150,33 +157,7 @@ app.get('/mission/:missionName', function(request, response) {
 
 });
 
-app.get('/mission2/:missionName', function(request, response) {
-	var cookie = request.cookies.user;
-	if(cookie === undefined){
-		console.log("error no cookie");
-		response.render('pages/login');
-	}
-	else {
-		var mission;
-		for(var i = 0; i < missions.length; i++){
-			if(request.params.missionName === missions[i].name){
-				break;
-			}
-		}
-		missions[i].users.push(cookie.user); // push to missions array
-		for(var j = 0; j < users.length; j++){
-			if(cookie.user === users[j].user){
-				break;
-			}
 
-		}
-		response.render('pages/mission2', {
-			mission:missions[i],
-			user: users[j]
-		});
-	}
-
-});
 
 app.get('/leaderboards', function(request, response) {
   response.render('pages/leaderboards');
