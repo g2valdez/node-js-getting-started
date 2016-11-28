@@ -135,15 +135,19 @@ app.get('/mission_browser', function(request, response) {
 		if (chance > .5) 
 			response.render('pages/mission_browser', {
   			missions: missions
-	});
+			});
 		else 
-			response.render('pages/mission_browser2', {
-  			missions: missions
-  		});
+			response.render('pages/continue');
 	}
 
 });
 
+
+app.get('/mission_browser2', function(request, response) {
+  response.render('pages/mission_browser2', {
+  	missions: missions
+  	});
+});
 
 app.get('/history', function(request, response) {
   response.render('pages/history');
