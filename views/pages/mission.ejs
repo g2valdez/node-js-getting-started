@@ -89,6 +89,13 @@ $(document).ready(function(){
             if(game_board.board[players[user.i].pos[0] + x][players[user.i].pos[1]].color === 'black') {
               if(game_board.board[players[user.i].pos[0] + x + x][players[user.i].pos[1]].walk === true) {
                 players[user.i].pos[0]+=(x+x);
+                var pack = {
+                  items: user.item_keys,
+                  userIndex: user.i,
+                  pos: players[user.i].pos,
+                  mission: mission
+                }
+                socket.emit('user movement', pack);
                 break;
               }
             }
@@ -98,15 +105,19 @@ $(document).ready(function(){
             if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x].color === 'black') {
               if(game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + x + x].walk === true) {
                 players[user.i].pos[1] += (x + x);
+                var pack = {
+                  items: user.item_keys,
+                  userIndex: user.i,
+                  pos: players[user.i].pos,
+                  mission: mission
+                }
+                socket.emit('user movement', pack);
                 break;
               }
             }
           }
 
         }
-        break;
-      case 'G':
-        //code
         break;
       case 'Y': //stun gunner
         var update_board = false;
@@ -140,9 +151,6 @@ $(document).ready(function(){
         if(update_board == true){
           socket.emit('update board', pack);
         }
-        break;
-      case 'B':
-        //cpde
         break;
       default:
         //code
@@ -674,7 +682,7 @@ $(document).ready(function(){
 
       //check if we hit a key or the goal state
       var curr_cell = game_board.board[players[pack.userIndex].pos[0]][players[pack.userIndex].pos[1]];
-      if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+      if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T' || curr_cell.type == 'N' || curr_cell.type == 'G' || curr_cell.type == 'M' || curr_cell.type == 'I') {
         for(var q = 0; q < pack.items.length; q++){
           if(pack.items[q] == 1){ //if this dude is the hacker
             hacking_tm = curr_cell;
