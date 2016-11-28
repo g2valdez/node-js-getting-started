@@ -44,9 +44,8 @@ app.post('/login', function(request, response){
 		if (users[i].user === newUser.user){
 			if (users[i].pass === newUser.pass){
 				response.cookie('user', users[i]);
-				response.render('pages/home', {
-					user_name: users[i].name,
-					user_img: users[i].img
+				response.render('pages/mission_browser', {
+					missions: missions
 				});
 				return;
 			}
@@ -142,15 +141,10 @@ app.get('/mission_browser', function(request, response) {
 
 });
 
-
 app.get('/mission_browser2', function(request, response) {
   response.render('pages/mission_browser2', {
   	missions: missions
   	});
-});
-
-app.get('/history', function(request, response) {
-  response.render('pages/history');
 });
 
 app.get('/mission/:missionName', function(request, response) {
@@ -174,7 +168,7 @@ app.get('/mission/:missionName', function(request, response) {
 
 		}
 		response.render('pages/mission', {
-			mission:missions[i],
+			mission: missions[i],
 			user: users[j]
 		});
 	}
@@ -204,7 +198,6 @@ app.get('/edit_profile', function(request, response) {
   	response.render('pages/edit_profile', {
   		user_name: users[j].name,
 	    user_img: users[j].img
-
   	});
 });
 
