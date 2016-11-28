@@ -44,10 +44,14 @@ app.post('/login', function(request, response){
 		if (users[i].user === newUser.user){
 			if (users[i].pass === newUser.pass){
 				response.cookie('user', users[i]);
-				response.render('pages/mission_browser', {
-					missions: missions
+				var chance = Math.random();
+				if (chance > .5) 
+					response.render('pages/mission_browser', {
+  					missions: missions
 				});
-				return;
+				else 
+					response.render('pages/continue');
+					return;
 			}
 			else {
 				console.log("right user wrong pass");
