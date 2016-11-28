@@ -674,7 +674,7 @@ $(document).ready(function(){
 
       //check if we hit a key or the goal state
       var curr_cell = game_board.board[players[pack.userIndex].pos[0]][players[pack.userIndex].pos[1]];
-      if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T'){
+      if(curr_cell.type == 'J' || curr_cell.type == 'H' || curr_cell.type == 'T' || curr_cell.type == 'N' || curr_cell.type == 'G' || curr_cell.type == 'M' || curr_cell.type == 'I') {
         for(var q = 0; q < pack.items.length; q++){
           if(pack.items[q] == 1){ //if this dude is the hacker
             hacking_tm = curr_cell;
