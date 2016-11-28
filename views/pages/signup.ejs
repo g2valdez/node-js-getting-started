@@ -8,21 +8,6 @@
 
   <% include ../partials/nav.ejs %>
 
-  <script>
-  var data = require('../data.json');
-
-  $(document).ready(function(){
-      $("mission_history").html("");
-      for(var i=0; i< user.mission_history.length; i++){
-        $("#mission_history").append('<hr><h2>' + user.mission_history[i] + '</h2>');
-      }
-      $("#mission_history").append("<hr>");
-
-      $("#num_games").html("<h3>" + user.mission_history.length + "</h3>");
-      $("#score").html("<h3>" + user.score + "</h3>");
-  })
-  </script>
-
 <div class="jumbotron text-center">
   <div class="container">
     <h1>Sign-Up</h1>

@@ -63,6 +63,26 @@ app.post('/login', function(request, response){
 
 });
 
+app.post('/signup', function(request, response){
+	var user = request.body.username;
+	var pass = request.body.password;
+	var newUser = {
+		user: user,
+		pass: pass
+	};
+	for (var i in users) {
+		if (users[i].user === newUser.user){
+			console.log("User already exists");
+			response.render('pages/signup');
+			return;
+		}
+	}
+
+	console.log("User added!");
+	response.render('pages/login');
+
+});
+
 app.get('/signup', function(request, response) {
   response.render('pages/signup');
 });
