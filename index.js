@@ -12,7 +12,7 @@ load_user_items(); // for each user, load its corresponding item data
 
 var app = express(); //creates a new web server
 var http = require('http').Server(app); // funnels web server through http
-var io = require('socket.io')(http); // new soccket.io instance
+var io = require('socket.io')(http); // new socket.io instance
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -69,18 +69,19 @@ app.post('/login', function(request, response){
 app.post('/signup', function(request, response){
 	var user = request.body.username;
 	var pass = request.body.password;
+	var name = request.body.name;
 	var newUser = {
 		user: user,
-		pass: pass
+		pass: pass,
+		name: name
 	};
-	for (var i in users) {
-		if (users[i].user === newUser.user){
-			console.log("User already exists");
-			response.render('pages/signup');
-			return;
-		}
-	}
 
+	users.push({"user":user, "pass":pass, "name":name, "item_keys": [0, 1], 
+		"img":"http://www.marryforever.com/images/noimg.jpg", "score":0
+	});
+	for (var i = 0; i < users.length; i++) {
+    console.log(users[i]);
+	}
 	console.log("User added!");
 	response.render('pages/login');
 

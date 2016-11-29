@@ -11,34 +11,21 @@
 <div class="jumbotron text-center">
   <div class="container">
     <h1>Sign-Up</h1>
-    	<fieldset id="signUp">
-    		<p style="color:red;">Required values are marked by an asterisk (*)</p>
-
-    		<label> Username:
-    			<input name="name" id="uName" placeholder="Username*" required="required"/>
-    		</label>
-        <hr />
-    		<label> Password: 
-    			<input name="name" id="pWord" placeholder="Password*" required="required"/>
-    		</label>
-        <br />
-    		<label> Confirm Password: 
-      		<input name="name" id="pWord2" placeholder="Confirm Password*" required="required"/>
-    		</label>
-        <hr />
-        <label> Email (Optional):
-          <input name="name" id="email"  placeholder="johndoe@email.com"/>
-        </label>
-        <br />
-        <label> Phone Number (Optional):
-          <input name="name" id="phone"  placeholder="XXX-XXX-XXXX"/>
-        </label>
-        <hr />
-
-    	 </fieldset>
-    <h2><a href="/login">Play Now!</h2>
-
-    <h2><a href="/">Home</a></h2>
+      <form action="/signup" id="loginForm" method="POST"> <br>
+          <p style="color:red;">Required values are marked by an asterisk (*)</p>
+          Username: <input id="user" type="text" placeholder="Username*" name="username" required="required"><br><br>
+          Password: <input id="password" type="password" placeholder="Password*" name="password" required="required"><br><br>
+          Name: <input id="name" type="text" placeholder="John Doe*" name="name" required="required"> <br><br>
+          Email: <input id="email" type="text" placeholder="johndoe@email.com"> <br> <br>
+          Phone: <input id="phone" type="text" placeholder="XXX-XXX-XXXX"> <br> <br>
+          <input type="submit" name="signup" value="Submit"> <br>
+      </form>
+    <form action="/login" id="loginForm" method="get"> <br>
+        <input type="submit"   name="login_form" value="Play Now!"> <br>
+    </form>
+    <form action="/" id="home" method="get"> <br>
+        <input type="submit" name="home_form" value="Home"> <br>
+    </form>
   </div>
 </div>
 
