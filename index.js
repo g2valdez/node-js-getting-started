@@ -80,7 +80,8 @@ app.post('/signup', function(request, response){
 	};
 
 	users.push({"user":user, "pass":pass, "name":name, "item_keys": [0, 1], 
-		"img":"http://www.marryforever.com/images/noimg.jpg", "score":0
+		"mission_history": [], "img":"http://www.marryforever.com/images/noimg.jpg", 
+		"score":0
 	});
 	for (var i = 0; i < users.length; i++) {
     console.log(users[i]);
