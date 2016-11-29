@@ -9,5 +9,6 @@
 	{"name":"Auto-Hack Device","key":"G","img":"https://s-media-cache-ak0.pinimg.com/564x/50/ed/97/50ed9795a8028423e72060dbf8d39dea.jpg", "desc": "If you are on a green space, certain hacked  walls will be removed"},
 	{"name":"X-Ray Goggles","key":"B","img":"http://i1293.photobucket.com/albums/b589/magraitr/CODEX/TECH/tactica_sensor_jamming.jpg", "desc":"Look past walls"},
 	{"name":"Stun Gun","key":"Y","img":"http://cdn.hiconsumption.com/wp-content/uploads/2015/05/Best-Stun-Guns.jpg", "desc":"Remove Guard spaces (denoted in red)"}
-]
+],
+"characters": [{"item_keys": [0, 1],"name":"Hacker"}, {"item_keys": [3, 2],"name":"Spy"}]
 }

@@ -8,6 +8,7 @@
   var socket = io();
   var user = <%-JSON.stringify(user)%>;
   var mission = <%-JSON.stringify(mission)%>;
+  var chosenChar = null;
   var missionActive = false;
 
   socket.on('connect', function(){
@@ -68,6 +69,13 @@ $(document).ready(function(){
     ctx.font = ("30px Arial");
     ctx.fillText("Waiting for all users to be ready...", cw, cw);
 
+    console.log(user.items[0]);
+    console.log(chosenChar.items[0]);
+
+    user.items = chosenChar.items;
+
+    console.log(user.items[0]);
+
     // draw (Waiting for other player) on canvas
     var pack = {
           'user': user,
@@ -75,6 +83,23 @@ $(document).ready(function(){
     };
     socket.emit('user ready', pack);
 
+  });
+
+  $("#activePage").on("click", ".chooser", function(){
+    var charaname = $(this).attr('id');
+    $("#startmission").removeClass('disabled');
+    if(charaname == 'hacker'){
+      console.log(charaname)
+      $("#spy").removeClass('actve');
+      $(this).addClass('actve');
+      chosenChar = <%-JSON.stringify(hacker)%>;
+    }
+    else {
+      console.log(charaname);
+      $("#hacker").removeClass('actve');
+      $(this).addClass('actve');
+      chosenChar = <%-JSON.stringify(spy)%>;;
+    }
   });
 
   $("#yourItems").on("click", ".yourItem", function(){
@@ -731,24 +756,55 @@ $(document).ready(function(){
   <div id="choose" class="container">
     <h1>Choose a Class:</h1>
     <h3><%=mission.name%></h3>
+
   </div>
 </div>
 
 <div id="activePage">
-  <div class="col-xs-6 text-center">
-    <h2> Hacker </h2>
-    <hr>
-  </div>
-  <div class="col-xs-6 text-center">
-    <h2> Spy </h2>
-    <hr>
+
+  <div class="row">
+    <div class="col-xs-6 text-center">
+      <hr>
+      <button type="button" class="btn-block chooser" id="hacker">
+        <h2> Hacker </h2>
+        <% for(var i=0; i<hacker.items.length; i++) {%>
+          <div class="row col-xs-12">
+            <img src="<%=hacker.items[i].img%>" class="col-xs-6">
+            <div class="col-xs-6 text-center">
+              <h2 class="col-xs-12"><%= hacker.items[i].name %></h2>
+              <p class="row col-xs-12"><%= hacker.items[i].desc %></p>
+            </div>
+          </div>
+        <%}%>
+      </button>
+      <hr>
+    </div>
+    <div class="col-xs-6 text-center">
+      <hr>
+      <button type="button" class="btn-block chooser" id="spy">
+        <h2> Spy </h2>
+        <% for(var i=0; i<spy.items.length; i++) {%>
+          <div class="row col-xs-12">
+            <img src="<%=spy.items[i].img%>" class="col-xs-6">
+            <div class="col-xs-6 text-center">
+              <h2 class="col-xs-12"><%= spy.items[i].name %></h2>
+              <p class="row col-xs-12"><%= spy.items[i].desc %></p>
+            </div>
+          </div>
+        <%}%>
+      </button>
+      <hr>
+    </div>
   </div>
 
-  <button type="button" class="center-block btn" id="startmission"> Start Mission </button>
-  <div id="activeUsers" class="container center-block">
+  <div class="row">
+    <button type="button" class="center-block btn disabled" id="startmission"> Start Mission </button>
+    <div id="activeUsers" class="container center-block">
+    </div>
   </div>
 
 </div>
+
 <div class="row fl">
   <div id="yourItems" class="container col-xs-6">
   </div>
