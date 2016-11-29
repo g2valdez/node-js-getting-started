@@ -3,12 +3,15 @@ var bodyParser = require('body-parser'); //used to funnel in form data such as l
 var cookieParser = require('cookie-parser'); //used to give users cookies when logging in
 var fs = require('fs'); //file I/O for board map 
 var users = require('./public/data.json').users; //reads data from data.json
+var characters = require('./public/data.json').characters;
 var missions = require('./public/data.json').missions;
 var items = require('./public/data.json').items;
 
 read_map_files(); // for each mission, load its map data
 
 load_user_items(); // for each user, load its corresponding item data
+
+load_character_items();
 
 var app = express(); //creates a new web server
 var http = require('http').Server(app); // funnels web server through http
@@ -174,7 +177,9 @@ app.get('/mission/:missionName', function(request, response) {
 		}
 		response.render('pages/mission', {
 			mission: missions[i],
-			user: users[j]
+			user: users[j],
+			hacker: characters[0],
+			spy: characters[1]
 		});
 	}
 
@@ -250,16 +255,14 @@ io.on('connection', function(socket){
 
 	socket.on('user ready', function(pack){
 		for(var j = 0; j < missions.length; j++){
-			console.log(j);
-			console.log(missions[j].name);
-			console.log(pack.mission.name);
 			if(missions[j].name === pack.mission.name){
 				missions[j].usersReady++;
 				break;
 			}
 		}
-		console.log(missions[j].usersReady);
-		io.emit('begin game', missions[j].usersReady);
+		pack.numReady = missions[j].usersReady;
+		console.log(pack.numReady);
+		io.emit('begin game', pack);
 	});
 
 	socket.on('user movement', function(pack){
@@ -333,7 +336,16 @@ function load_user_items() {
 	}
 }
 
+function load_character_items() {
+	for(var i = 0; i < characters.length; i++){
+		characters[i].items = []; // initialize empty array of item objects
+		for(var j = 0; j < characters[i].item_keys.length; j++){
+			characters[i].items.push(items[characters[i].item_keys[j]]);
+		}
+	}
+}
+
+
 http.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
-
 });

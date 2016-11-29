@@ -8,6 +8,7 @@
   var socket = io();
   var user = <%-JSON.stringify(user)%>;
   var mission = <%-JSON.stringify(mission)%>;
+  var chosenChar = null;
   var missionActive = false;
 
   socket.on('connect', function(){
@@ -16,11 +17,6 @@
       'mission': mission
     };
 
-    $("#yourItems").html("<h2> Your Items: </h2>");
-    for(var i=0; i< user.items.length; i++){
-      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><div class="col-xs-6"><button class="row" type="button">' + user.items[i].name + '</button><p class="row">'+ user.items[i].desc +'</p></div></div>');
-    }
-    $("#yourItems").append("<hr>");
 
     socket.emit('user info', pack);
   });
@@ -68,13 +64,40 @@ $(document).ready(function(){
     ctx.font = ("30px Arial");
     ctx.fillText("Waiting for all users to be ready...", cw, cw);
 
+    //user item stuff
+    user.items = chosenChar.items;
+    user.item_keys = chosenChar.item_keys;
+    $("#yourItems").html("<h2> Your Items: </h2>");
+    for(var i=0; i< user.items.length; i++){
+      $("#yourItems").append('<hr><div class="row yourItem" itemID="'+i+'"><img src="'+user.items[i].img+'" class="col-xs-4"><div class="col-xs-6"><button class="row" type="button">' + user.items[i].name + '</button><p class="row">'+ user.items[i].desc +'</p></div></div>');
+    }
+    $("#yourItems").append("<hr>");
+
     // draw (Waiting for other player) on canvas
     var pack = {
           'user': user,
+          'char': chosenChar.name,
           'mission': mission
     };
     socket.emit('user ready', pack);
 
+  });
+
+  $("#activePage").on("click", ".chooser", function(){
+    var charaname = $(this).attr('id');
+    if(!($(this).hasClass('disabled'))){
+      $("#startmission").removeClass('disabled');
+      if(charaname == 'hacker'){
+        $("#spy").removeClass('actve');
+        $(this).addClass('actve');
+        chosenChar = <%-JSON.stringify(hacker)%>;
+      }
+      else {
+        $("#hacker").removeClass('actve');
+        $(this).addClass('actve');
+        chosenChar = <%-JSON.stringify(spy)%>;;
+      }
+    }
   });
 
   $("#yourItems").on("click", ".yourItem", function(){
@@ -562,7 +585,6 @@ $(document).ready(function(){
     //Lets add proper direction based movement now
     if(d == "right" && players[user.i].pos[0] + 1 < game_board.grid[0].length){
       var val = game_board.board[players[user.i].pos[0] + 1][players[user.i].pos[1]];
-      console.log("checking right: "+ val.type+": "+val.walk);
       if(val.walk == true) {
         score--;
         should_update = true;
@@ -585,9 +607,7 @@ $(document).ready(function(){
       }
     }
     else if(d == "down" && players[user.i].pos[1] + 1 < game_board.grid.length) {
-      
       var val = game_board.board[players[user.i].pos[0]][players[user.i].pos[1] + 1];
-      console.log("checking down: "+ val.type+": "+val.walk);
       if(val.walk == true) {
         score--;
         should_update = true;
@@ -646,8 +666,17 @@ $(document).ready(function(){
     }
   })
 
-  socket.on('begin game', function(usersReady){
+  socket.on('begin game', function(pack){
+    var usersReady = pack.numReady;
+    var chosen = pack.char.toLowerCase();
+    var toDisable = "#"+chosen;
+    $(toDisable).addClass("disabled");
+    $(toDisable).hide();
+    console.log(chosen);
     for(var i = 0; i < mission.users.length; i++){
+      if(mission.users[i].user === pack.user.user){
+        mission.users[i] = pack.user;
+      }
       if(mission.users[i].user === user.user){
         user.i = i;
       }
@@ -731,24 +760,55 @@ $(document).ready(function(){
   <div id="choose" class="container">
     <h1>Choose a Class:</h1>
     <h3><%=mission.name%></h3>
+
   </div>
 </div>
 
 <div id="activePage">
-  <div class="col-xs-6 text-center">
-    <h2> Hacker </h2>
-    <hr>
-  </div>
-  <div class="col-xs-6 text-center">
-    <h2> Spy </h2>
-    <hr>
+
+  <div class="row">
+    <div class="col-xs-6 text-center">
+      <hr>
+      <button type="button" class="btn-block chooser" id="hacker">
+        <h2> Hacker </h2>
+        <% for(var i=0; i<hacker.items.length; i++) {%>
+          <div class="row col-xs-12">
+            <img src="<%=hacker.items[i].img%>" class="col-xs-6">
+            <div class="col-xs-6 text-center">
+              <h2 class="col-xs-12"><%= hacker.items[i].name %></h2>
+              <p class="row col-xs-12"><%= hacker.items[i].desc %></p>
+            </div>
+          </div>
+        <%}%>
+      </button>
+      <hr>
+    </div>
+    <div class="col-xs-6 text-center">
+      <hr>
+      <button type="button" class="btn-block chooser" id="spy">
+        <h2> Spy </h2>
+        <% for(var i=0; i<spy.items.length; i++) {%>
+          <div class="row col-xs-12">
+            <img src="<%=spy.items[i].img%>" class="col-xs-6">
+            <div class="col-xs-6 text-center">
+              <h2 class="col-xs-12"><%= spy.items[i].name %></h2>
+              <p class="row col-xs-12"><%= spy.items[i].desc %></p>
+            </div>
+          </div>
+        <%}%>
+      </button>
+      <hr>
+    </div>
   </div>
 
-  <button type="button" class="center-block btn" id="startmission"> Start Mission </button>
-  <div id="activeUsers" class="container center-block">
+  <div class="row">
+    <button type="button" class="center-block btn disabled" id="startmission"> Start Mission </button>
+    <div id="activeUsers" class="container center-block">
+    </div>
   </div>
 
 </div>
+
 <div class="row fl">
   <div id="yourItems" class="container col-xs-6">
   </div>

@@ -86,3 +86,11 @@ a {
   float: left;
   margin: 0;
 }
+
+.actve.chooser{
+  background: #70d4ff;
+}
+
+.disabled.chooser{
+  .background: #d68484;
+}
