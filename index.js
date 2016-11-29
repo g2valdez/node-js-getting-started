@@ -254,16 +254,14 @@ io.on('connection', function(socket){
 
 	socket.on('user ready', function(pack){
 		for(var j = 0; j < missions.length; j++){
-			console.log(j);
-			console.log(missions[j].name);
-			console.log(pack.mission.name);
 			if(missions[j].name === pack.mission.name){
 				missions[j].usersReady++;
 				break;
 			}
 		}
-		console.log(missions[j].usersReady);
-		io.emit('begin game', missions[j].usersReady);
+		pack.numReady = missions[j].usersReady;
+		console.log(pack.numReady);
+		io.emit('begin game', pack);
 	});
 
 	socket.on('user movement', function(pack){

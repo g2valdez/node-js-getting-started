@@ -87,7 +87,10 @@ a {
   margin: 0;
 }
 
-.actve{
+.actve.chooser{
   background: #70d4ff;
+}
 
+.disabled.chooser{
+  .background: #d68484;
 }
